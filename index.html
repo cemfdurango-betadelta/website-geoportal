@@ -1,0 +1,1250 @@
+Versión 5 
+>Mejora botón de pantalla completa
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoportal - Estado de Durango</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: #f0f2f5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 350px;
+            background: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            height: 60%;
+            width: 100%;
+            z-index: 1;
+        }
+        
+        .info-panel {
+            height: 40%;
+            padding: 15px;
+            background-color: #fff;
+            border-top: 3px solid #16213e;
+            overflow-y: auto;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .panel-title {
+            font-size: 1.2rem;
+            color: #16213e;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4cc9f0;
+        }
+        
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+            color: white;
+            border-radius: 8px 8px 0 0 !important;
+            font-weight: 600;
+            padding: 12px 15px;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .form-control:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3a0ca3 0%, #4361ee 100%);
+        }
+        
+        .coordinates-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .coordinates-input .form-control {
+            flex: 1;
+        }
+        
+        .layer-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .layer-item:last-child {
+            border-bottom: none;
+        }
+        
+        .layer-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .info-table th {
+            background-color: #16213e;
+            color: white;
+            text-align: left;
+            padding: 12px;
+        }
+        
+        .info-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .info-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .info-table tr:hover {
+            background-color: #f0f7ff;
+        }
+        
+        .layer-name {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .base-maps-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .base-map-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            background: #f0f5ff;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .base-map-btn.active {
+            border-color: #4361ee;
+            background: #e0eaff;
+            font-weight: bold;
+        }
+        
+        .base-map-btn:hover {
+            background: #e0eaff;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 40%;
+            }
+            
+            #map {
+                height: 60%;
+            }
+            
+            .info-panel {
+                height: 40%;
+            }
+        }
+        
+        .spinner-border {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        /* ESTILOS SOLO PARA LOCALIDADES OPTIMIZADAS */
+        .localidad-punto {
+            stroke-width: 1px;
+            stroke-opacity: 0.9;
+            fill-opacity: 0.8;
+        }
+        
+        /* Cluster styles optimizados */
+        .marker-cluster-small {
+            background-color: rgba(255, 0, 0, 0.3);
+        }
+        .marker-cluster-small div {
+            background-color: rgba(255, 0, 0, 0.6);
+            color: white;
+        }
+        
+        .marker-cluster-medium {
+            background-color: rgba(255, 0, 0, 0.4);
+        }
+        .marker-cluster-medium div {
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+        }
+        
+        .marker-cluster-large {
+            background-color: rgba(255, 0, 0, 0.5);
+        }
+        .marker-cluster-large div {
+            background-color: rgba(255, 0, 0, 0.8);
+            color: white;
+        }
+        
+        /* ESTILO MODIFICADO: TEXTO SIN MARCO BLANCO */
+        .etiqueta-localidad {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-size: 11px !important;
+            font-weight: bold !important;
+            color: #000000 !important;
+            text-shadow: 
+                1px 1px 2px rgba(255, 255, 255, 0.8),
+                -1px -1px 2px rgba(255, 255, 255, 0.8),
+                1px -1px 2px rgba(255, 255, 255, 0.8),
+                -1px 1px 2px rgba(255, 255, 255, 0.8) !important;
+            white-space: nowrap !important;
+            pointer-events: none !important;
+        }
+        
+        /* ESTILOS PARA BOTÓN DE PANTALLA COMPLETA */
+        .leaflet-control-fullscreen a {
+            background: #fff;
+            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            font-size: 18px;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .leaflet-control-fullscreen a:hover {
+            background: #f4f4f4;
+        }
+        
+        .leaflet-control-fullscreen-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Estilos para pantalla completa del mapa */
+        .map-container.fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            background: white;
+        }
+        
+        .map-container.fullscreen #map {
+            height: 100% !important;
+        }
+        
+        .map-container.fullscreen .info-panel {
+            display: none !important;
+        }
+        
+        .map-container:not(.fullscreen) #map {
+            height: 60%;
+        }
+        
+        .map-container:not(.fullscreen) .info-panel {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <div class="logo">🌎</div>
+            <h1>Geoportal del Estado de Durango</h1>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">Mapas Base</div>
+                <div class="card-body">
+                    <div class="base-maps-container">
+                        <div class="base-map-btn active" data-base="osm">OpenStreetMap</div>
+                        <div class="base-map-btn" data-base="google">Google Híbrido</div>
+                        <div class="base-map-btn" data-base="esri">Esri Satélite</div>
+                        <div class="base-map-btn" data-base="relieve">Relieve/Topografía</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Control de Capas</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Cargar capas desde GitHub:</label>
+                        <div id="github-layers-list">
+                            <!-- Las capas disponibles se cargarán aquí mediante JavaScript -->
+                        </div>
+                        <div id="layer-error" class="error-message" style="display: none;"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Capas activas:</label>
+                        <div class="layer-list" id="active-layers">
+                            <!-- Las capas activas se agregarán aquí dinámicamente -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" id="save-config">
+                            Guardar configuración
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Consulta por Coordenadas</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="coordinates" class="form-label">Ingrese coordenadas (lat, long):</label>
+                        <div class="coordinates-input">
+                            <input type="text" class="form-control" id="coordinates" placeholder="Ej: 24.8295, -104.8555">
+                            <button class="btn btn-primary" id="search-coords">
+                                Buscar
+                            </button>
+                        </div>
+                        <div class="form-text">Formato decimal: latitud, longitud</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="map-container" id="map-container">
+            <div id="map"></div>
+            <div class="info-panel">
+                <h3 class="panel-title">Información de la Ubicación</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>Capa</th>
+                            <th>Atributo</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="info-content">
+                        <tr>
+                            <td colspan="3" class="text-center">Ingrese coordenadas para consultar información</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script>
+        // Inicializar el mapa centrado en Durango
+        const map = L.map('map').setView([24.8295, -104.8555], 7);
+        
+        // Definir mapas base (TODOS LOS MAPAS BASE ORIGINALES)
+        const baseMaps = {
+            osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }),
+            google: L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+                attribution: '&copy; Google',
+                subdomains: ['mt0','mt1','mt2','mt3'],
+                maxZoom: 20
+            }),
+            esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                maxZoom: 17
+            }),
+            relieve: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
+                maxZoom: 13
+            })
+        };
+        
+        // Añadir OpenStreetMap como mapa base por defecto
+        baseMaps.osm.addTo(map);
+        
+        // ===== CONTROL DE PANTALLA COMPLETA PARA EL MAPA =====
+        L.Control.MapFullscreen = L.Control.extend({
+            options: {
+                position: 'topright',
+                title: 'Pantalla completa del mapa',
+                forceSeparateButton: true
+            },
+            
+            onAdd: function(map) {
+                const container = L.DomUtil.create('div', 'leaflet-control-fullscreen leaflet-bar leaflet-control');
+                
+                const link = L.DomUtil.create('a', 'leaflet-control-fullscreen-button leaflet-bar-part', container);
+                link.href = '#';
+                link.title = this.options.title;
+                link.innerHTML = '⛶';
+                
+                L.DomEvent
+                    .on(link, 'click', L.DomEvent.stopPropagation)
+                    .on(link, 'click', L.DomEvent.preventDefault)
+                    .on(link, 'click', this.toggleFullscreen, this);
+                
+                return container;
+            },
+            
+            toggleFullscreen: function() {
+                const mapContainer = document.getElementById('map-container');
+                const isFullscreen = mapContainer.classList.contains('fullscreen');
+                
+                if (!isFullscreen) {
+                    // Entrar en pantalla completa del mapa
+                    mapContainer.classList.add('fullscreen');
+                    
+                    // Ocultar sidebar
+                    document.querySelector('.sidebar').style.display = 'none';
+                    
+                    // Redimensionar el mapa
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                    
+                    // Cambiar ícono (opcional)
+                    this.getContainer().querySelector('a').innerHTML = '✕';
+                    this.getContainer().querySelector('a').title = 'Salir de pantalla completa';
+                } else {
+                    // Salir de pantalla completa
+                    mapContainer.classList.remove('fullscreen');
+                    
+                    // Mostrar sidebar
+                    document.querySelector('.sidebar').style.display = 'flex';
+                    
+                    // Redimensionar el mapa
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                    
+                    // Cambiar ícono (opcional)
+                    this.getContainer().querySelector('a').innerHTML = '⛶';
+                    this.getContainer().querySelector('a').title = 'Pantalla completa del mapa';
+                }
+            }
+        });
+        
+        L.control.mapfullscreen = function(options) {
+            return new L.Control.MapFullscreen(options);
+        };
+        
+        // Añadir el control de pantalla completa del mapa
+        L.control.mapfullscreen({
+            position: 'topright',
+            title: 'Ver mapa en pantalla completa'
+        }).addTo(map);
+        
+        // Manejar la tecla Escape para salir de pantalla completa
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const mapContainer = document.getElementById('map-container');
+                if (mapContainer.classList.contains('fullscreen')) {
+                    mapContainer.classList.remove('fullscreen');
+                    document.querySelector('.sidebar').style.display = 'flex';
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                    
+                    // Actualizar ícono
+                    const fullscreenBtn = document.querySelector('.leaflet-control-fullscreen-button');
+                    if (fullscreenBtn) {
+                        fullscreenBtn.innerHTML = '⛶';
+                        fullscreenBtn.title = 'Pantalla completa del mapa';
+                    }
+                }
+            }
+        });
+        
+        // Cambiar mapa base
+        document.querySelectorAll('.base-map-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const baseMap = this.getAttribute('data-base');
+                
+                // Quitar todos los mapas base
+                for (const key in baseMaps) {
+                    map.removeLayer(baseMaps[key]);
+                }
+                
+                // Añadir el mapa base seleccionado
+                baseMaps[baseMap].addTo(map);
+                
+                // Actualizar botones activos
+                document.querySelectorAll('.base-map-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Objeto para almacenar las capas cargadas
+        const loadedLayers = {};
+        
+        // Lista de capas disponibles 
+        const availableLayers = [
+            {
+                name: "Límites municipales",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Municipios_Dgo.geojson",
+                color: "#cebb05",
+                type: "polygon"
+            },
+            {
+                name: "Red hidrológica",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/geojson/hidrologia.geojson",
+                color: "#4361ee",
+                type: "line"
+            },
+            {
+                name: "Red vial",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main//Red_vial2.geojson",
+                color: "#4cc9f0",
+                type: "line"
+            },
+            {
+                name: "Nucleos RAN",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Nucleos_RAN.geojson",
+                color: "#f72585",
+                type: "polygon"
+            },
+            {
+                name: "Localidades",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Localidades_Dgo.geojson",
+                color: "#FF0000",  // Cambiado a rojo para mejor visibilidad
+                type: "point",
+                // CONFIGURACIÓN OPTIMIZADA SOLO PARA LOCALIDADES
+                optimize: true,            // Activar optimización
+                minZoom: 8,                // Mostrar solo desde zoom 8
+                pointSize: 3,              // Puntos pequeños como QGIS
+                cluster: true,             // Agrupar puntos
+                clusterRadius: 50,         // Radio de agrupación
+                showLabelsAtZoom: 9,      // Etiquetas solo en zoom alto
+                maxPoints: 1500            // Límite para rendimiento
+            },
+            {
+                name: "ANP",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/ANPs_Merge_Dgo.geojson",
+                color: "#d2a0fc",
+                type: "polygon"
+            },
+            {
+                name: "Uso de suelo",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/USV_VII_Durango.geojson",
+                color: "#7209b7",
+                type: "polygon"
+            },
+             {
+                name: "Brigadas",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Brigadas_General.geojson",
+                color: "#4361ee",
+                type: "point"
+            }
+        ];
+        
+        // Cargar lista de capas disponibles
+        function loadAvailableLayers() {
+            const layersList = document.getElementById('github-layers-list');
+            layersList.innerHTML = '';
+            
+            availableLayers.forEach(layer => {
+                const layerId = `available-${layer.url.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                const layerItem = document.createElement('div');
+                layerItem.className = 'layer-item';
+                
+                // Añadir atributos extra para localidades optimizadas
+                const extraAttrs = layer.optimize ? 
+                    `data-optimize="true" data-point-size="${layer.pointSize || 3}"` : '';
+                
+                layerItem.innerHTML = `
+                    <div class="layer-color" style="background-color: ${layer.color};"></div>
+                    <div class="form-check">
+                        <input class="form-check-input layer-checkbox" type="checkbox" 
+                               data-url="${layer.url}" 
+                               data-color="${layer.color}"
+                               data-type="${layer.type}"
+                               ${extraAttrs}
+                               id="${layerId}">
+                        <label class="form-check-label" for="${layerId}">${layer.name}</label>
+                    </div>
+                `;
+                layersList.appendChild(layerItem);
+                
+                // Evento para cargar capa cuando se selecciona
+                const checkbox = layerItem.querySelector('.layer-checkbox');
+                checkbox.addEventListener('change', function() {
+                    const url = this.getAttribute('data-url');
+                    const color = this.getAttribute('data-color');
+                    const type = this.getAttribute('data-type');
+                    const optimize = this.getAttribute('data-optimize') === 'true';
+                    const pointSize = this.getAttribute('data-point-size') ? 
+                        parseInt(this.getAttribute('data-point-size')) : null;
+                    
+                    if (this.checked) {
+                        loadLayer(url, color, type, optimize, pointSize);
+                    } else {
+                        removeLayer(url);
+                    }
+                });
+            });
+        }
+        
+        // Cargar una capa desde GitHub
+        function loadLayer(url, color, type, optimize = false, pointSize = null) {
+            // Evitar cargar la misma capa múltiples veces
+            if (loadedLayers[url]) {
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            const layerId = `layer-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
+            addToActiveLayersList(url, getLayerNameByUrl(url), color, true);
+            
+            // Ocultar mensajes de error previos
+            document.getElementById('layer-error').style.display = 'none';
+            
+            // Cargar el GeoJSON desde GitHub
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Procesar los datos geoespaciales (SOLO LOCALIDADES OPTIMIZADAS)
+                    const layer = optimize ? 
+                        processLocalidadesOptimizadas(data, color, pointSize) : 
+                        processGeoJSONNormal(data, color, type);
+                    
+                    // Añadir la capa al mapa
+                    layer.addTo(map);
+                    
+                    // Guardar referencia a la capa
+                    loadedLayers[url] = {
+                        layer: layer,
+                        name: getLayerNameByUrl(url),
+                        color: color,
+                        type: type,
+                        data: data
+                    };
+                    
+                    // Actualizar la lista de capas activas
+                    updateActiveLayersList(url, getLayerNameByUrl(url), color);
+                })
+                .catch(error => {
+                    console.error('Error cargando la capa:', error);
+                    
+                    // Mostrar mensaje de error al usuario
+                    const errorElement = document.getElementById('layer-error');
+                    errorElement.textContent = `Error al cargar la capa: ${error.message}`;
+                    errorElement.style.display = 'block';
+                    
+                    // Eliminar la capa de la lista activa
+                    removeLayer(url);
+                    
+                    // Desmarcar el checkbox
+                    const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                    }
+                });
+        }
+        
+        // Obtener nombre de capa por URL
+        function getLayerNameByUrl(url) {
+            const layer = availableLayers.find(l => l.url === url);
+            return layer ? layer.name : "Capa sin nombre";
+        }
+        
+        // ===== FUNCIÓN OPTIMIZADA SOLO PARA LOCALIDADES =====
+        function processLocalidadesOptimizadas(data, color, pointSize = 3) {
+            console.log(`Procesando Localidades optimizadas: ${data.features.length} puntos`);
+            
+            // 1. LIMITAR PUNTOS SI SON DEMASIADOS (MEJOR RENDIMIENTO)
+            let features = data.features;
+            const maxPoints = 10500;
+            
+            if (features.length > maxPoints) {
+                console.log(`Optimizando: ${features.length} → ${maxPoints} puntos`);
+                const step = Math.ceil(features.length / maxPoints);
+                features = features.filter((_, index) => index % step === 0);
+                data.features = features;
+            }
+            
+            // 2. CREAR CLUSTER PARA AGRUPACIÓN
+            const markers = L.markerClusterGroup({
+                chunkedLoading: true,     // Carga por partes
+                chunkDelay: 50,           // Más rápido
+                maxClusterRadius: 50,     // Radio de agrupación
+                spiderfyOnMaxZoom: true,  // Separar al hacer clic
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                disableClusteringAtZoom: 9 // Desactivar clustering en zoom alto
+            });
+            
+            // Array para almacenar TODAS las etiquetas (labelMarkers)
+            const todasLasEtiquetas = [];
+            
+            // 3. CREAR PUNTOS SIMPLES LOCALIDAD
+            const geoJsonLayer = L.geoJSON(data, {
+                pointToLayer: function(feature, latlng) {
+                    // Punto pequeño y simple
+                    return L.circleMarker(latlng, {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.85,     // Más opaco para mejor visibilidad
+                        radius: pointSize,     // Punto pequeño (3px)
+                        weight: 1,             // Borde fino
+                        className: 'localidad-punto'
+                    });
+                },
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties) {
+                        // Obtener nombre
+                        const nombre = feature.properties.NOMBRE || 
+                                     feature.properties.nombre || 
+                                     feature.properties.Nombre || 
+                                     'Sin nombre';
+                        
+                        // Obtener las coordenadas del punto desde el layer
+                        const latlng = layer.getLatLng();
+                        
+                        // TOOLTIP SIMPLE (solo al hover) - CON MARCO
+                        layer.bindTooltip(nombre, {
+                            permanent: false,        // Solo al hover
+                            direction: 'top',
+                            className: 'localidad-tooltip',
+                            offset: [0, -pointSize - 5]
+                        });
+                        
+                        // ETIQUETA PERMANENTE (zoom >= 9) - SIN MARCO
+                        // Crear un div personalizado para la etiqueta
+                        const labelDiv = L.divIcon({
+                            className: 'etiqueta-localidad',
+                            html: nombre,
+                            iconSize: [100, 20], // Tamaño suficiente para el texto
+                            iconAnchor: [10, 0]  // Posicionado a la derecha del punto
+                        });
+                        
+                        // Crear marcador invisible para la etiqueta
+                        const labelMarker = L.marker(latlng, {
+                            icon: labelDiv,
+                            interactive: false, // No interactivo
+                            zIndexOffset: 1000  // Encima de los puntos
+                        });
+                        
+                        // Guardar referencia al marcador de etiqueta en el layer
+                        layer._labelMarker = labelMarker;
+                        // También guardar en el array global para limpiar después
+                        todasLasEtiquetas.push(labelMarker);
+                        
+                        // POPUP DETALLADO (al hacer clic)
+                        let popupContent = `<div style="max-width: 250px;">
+                            <strong style="color: ${color}; font-size: 14px;">${nombre}</strong><br>`;
+                        
+                        // Campos más importantes
+                        const props = feature.properties;
+                        const importantFields = ['NOMBRE', 'POBLACION', 'MUNICIPIO', 'TIPO', 'ESTADO'];
+                        
+                        importantFields.forEach(field => {
+                            if (props[field] && props[field] !== '') {
+                                popupContent += `<div style="margin-top: 3px;">
+                                    <span style="font-weight: 600; color: #333;">${field}:</span> 
+                                    <span style="color: #666;">${props[field]}</span>
+                                </div>`;
+                            }
+                        });
+                        
+                        popupContent += `</div>`;
+                        layer.bindPopup(popupContent);
+                    }
+                }
+            });
+            
+            // 4. AÑADIR AL CLUSTER
+            markers.addLayer(geoJsonLayer);
+            
+            // Guardar referencia al array de etiquetas en el cluster para poder limpiarlas
+            markers._todasLasEtiquetas = todasLasEtiquetas;
+            
+            // 5. CONTROL DE ETIQUETAS SEGÚN ZOOM - MODIFICADO
+            const labelZoom = 9;
+            
+            function updateLabels() {
+                const zoom = map.getZoom();
+                const showLabels = zoom >= labelZoom;
+                
+                geoJsonLayer.eachLayer(function(layer) {
+                    if (showLabels) {
+                        // Mostrar etiqueta sin marco
+                        if (layer._labelMarker && !map.hasLayer(layer._labelMarker)) {
+                            layer._labelMarker.addTo(map);
+                        }
+                        // Ocultar tooltip con marco
+                        if (layer._tooltip && layer._tooltip.isOpen()) {
+                            layer.closeTooltip();
+                        }
+                    } else {
+                        // Ocultar etiqueta sin marco
+                        if (layer._labelMarker && map.hasLayer(layer._labelMarker)) {
+                            map.removeLayer(layer._labelMarker);
+                        }
+                    }
+                });
+            }
+            
+            // Escuchar cambios de zoom
+            const zoomListener = function() {
+                updateLabels();
+            };
+            map.on('zoomend', zoomListener);
+            
+            // Guardar referencia al event listener para poder removerlo después
+            markers._zoomListener = zoomListener;
+            
+            // Inicializar etiquetas
+            setTimeout(updateLabels, 100);
+            
+            return markers;
+        }
+        
+        // ===== FUNCIÓN ORIGINAL PARA OTRAS CAPAS =====
+        function processGeoJSONNormal(data, color, type) {
+            try {
+                // Determinar el estilo según el tipo de geometría
+                const style = {
+                    color: color,
+                    weight: type === 'line' ? 3 : 2,
+                    opacity: 0.8,
+                    fillColor: type === 'line' ? 'transparent' : color,
+                    fillOpacity: type === 'line' ? 0 : 0.2
+                };
+                
+                // Crear la capa GeoJSON
+                return L.geoJSON(data, {
+                    style: style,
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties) {
+                            let popupContent = "<div><strong>Propiedades:</strong><br>";
+                            for (let key in feature.properties) {
+                                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+                            }
+                            popupContent += "</div>";
+                            layer.bindPopup(popupContent);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error procesando GeoJSON:", error);
+                throw new Error("Formato de datos no válido");
+            }
+        }
+        
+        // ===== FUNCIÓN MODIFICADA PARA ELIMINAR CAPAS =====
+        function removeLayer(url) {
+            if (loadedLayers[url]) {
+                // 1. Limpiar etiquetas si es capa de localidades optimizadas
+                if (loadedLayers[url].layer._todasLasEtiquetas) {
+                    loadedLayers[url].layer._todasLasEtiquetas.forEach(labelMarker => {
+                        if (map.hasLayer(labelMarker)) {
+                            map.removeLayer(labelMarker);
+                        }
+                    });
+                }
+                
+                // 2. Remover el event listener de zoom si existe
+                if (loadedLayers[url].layer._zoomListener) {
+                    map.off('zoomend', loadedLayers[url].layer._zoomListener);
+                }
+                
+                // 3. Remover la capa principal
+                map.removeLayer(loadedLayers[url].layer);
+                delete loadedLayers[url];
+                
+                // 4. Eliminar de la lista de capas activas
+                const layerElement = document.getElementById(`active-${url.replace(/[^a-zA-Z0-9]/g, '-')}`);
+                if (layerElement) {
+                    layerElement.remove();
+                }
+                
+                // 5. Desmarcar el checkbox en la lista de disponibles
+                const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
+                if (checkbox) {
+                    checkbox.checked = false;
+                }
+            }
+        }
+        
+        // Añadir capa a la lista de activas
+        function addToActiveLayersList(url, name, color, loading = false) {
+            const layerId = `active-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
+            
+            const layerItem = document.createElement('div');
+            layerItem.className = 'layer-item';
+            layerItem.id = layerId;
+            layerItem.innerHTML = `
+                <div class="layer-color" style="background-color: ${color};"></div>
+                <div class="layer-name">${name}</div>
+                ${loading ? '<div class="spinner-border spinner-border-sm" role="status"></div>' : 
+                '<button class="btn btn-sm btn-danger remove-layer" data-url="${url}">X</button>'}
+            `;
+            
+            document.getElementById('active-layers').appendChild(layerItem);
+            
+            // Evento para eliminar capa
+            if (!loading) {
+                layerItem.querySelector('.remove-layer').addEventListener('click', function() {
+                    removeLayer(url);
+                });
+            }
+        }
+        
+        // Actualizar la lista de capas activas
+        function updateActiveLayersList(url, name, color) {
+            const layerId = `active-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
+            const layerElement = document.getElementById(layerId);
+            
+            if (layerElement) {
+                layerElement.innerHTML = `
+                    <div class="layer-color" style="background-color: ${color};"></div>
+                    <div class="layer-name">${name}</div>
+                    <button class="btn btn-sm btn-danger remove-layer" data-url="${url}">X</button>
+                `;
+                
+                // Evento para eliminar capa
+                layerElement.querySelector('.remove-layer').addEventListener('click', function() {
+                    removeLayer(url);
+                });
+            }
+        }
+        
+        // Función para buscar coordenadas
+        document.getElementById('search-coords').addEventListener('click', function() {
+            const coordsInput = document.getElementById('coordinates').value;
+            const coords = coordsInput.split(',').map(coord => parseFloat(coord.trim()));
+            
+            if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                // Validar rangos de coordenadas
+                if (coords[0] >= -90 && coords[0] <= 90 && coords[1] >= -180 && coords[1] <= 180) {
+                    map.setView(coords, 14);
+                    
+                    // Limpiar marcadores existentes
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.Marker) {
+                            map.removeLayer(layer);
+                        }
+                    });
+                    
+                    // Añadir nuevo marcador
+                    const marker = L.marker(coords)
+                        .addTo(map)
+                        .bindPopup(`Coordenadas: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`)
+                        .openPopup();
+                    
+                    // Cargar información de todas las capas para estas coordenadas
+                    loadDataForCoordinates(coords);
+                } else {
+                    alert('Por favor ingrese coordenadas válidas. Latitud entre -90 y 90, Longitud entre -180 y 180.');
+                }
+            } else {
+                alert('Formato incorrecto. Por favor use: latitud, longitud (Ej: 24.8295, -104.8555)');
+            }
+        });
+        
+        // Función para buscar datos en coordenadas específicas
+        function loadDataForCoordinates(coords) {
+            document.getElementById('info-content').innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center">Buscando información para: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}</td>
+                </tr>
+            `;
+            
+            // Buscar en las capas cargadas
+            let tableContent = '';
+            let foundData = false;
+            
+            // Crear un punto Leaflet para las consultas
+            const point = L.latLng(coords[0], coords[1]);
+            
+            // Para cada capa cargada, buscar características que contengan el punto
+            for (const url in loadedLayers) {
+                const layerInfo = loadedLayers[url];
+                let layerData = '';
+                
+                try {
+                    // Buscar features que intersecten con el punto
+                    layerInfo.layer.eachLayer(function(featureLayer) {
+                        if (featureLayer.getBounds && featureLayer.getBounds().contains(point)) {
+                            const feature = featureLayer.feature;
+                            if (feature && feature.properties) {
+                                foundData = true;
+                                for (let key in feature.properties) {
+                                    layerData += `
+                                        <tr>
+                                            <td>${layerInfo.name}</td>
+                                            <td>${key}</td>
+                                            <td>${feature.properties[key] || 'N/A'}</td>
+                                        </tr>
+                                    `;
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error(`Error buscando en ${layerInfo.name}:`, error);
+                }
+                
+                if (layerData) {
+                    tableContent += layerData;
+                } else {
+                    tableContent += `
+                        <tr>
+                            <td>${layerInfo.name}</td>
+                            <td colspan="2">No hay datos en esta ubicación</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            if (!foundData && Object.keys(loadedLayers).length > 0) {
+                tableContent = `
+                    <tr>
+                        <td colspan="3" class="text-center">No se encontraron datos para estas coordenadas en las capas cargadas</td>
+                    </tr>
+                `;
+            } else if (Object.keys(loadedLayers).length === 0) {
+                tableContent = `
+                    <tr>
+                        <td colspan="3" class="text-center">No hay capas cargadas. Active algunas capas primero.</td>
+                    </tr>
+                `;
+            }
+            
+            document.getElementById('info-content').innerHTML = tableContent;
+        }
+        
+        // Guardar configuración
+        document.getElementById('save-config').addEventListener('click', function() {
+            const config = {
+                baseMap: document.querySelector('.base-map-btn.active').getAttribute('data-base'),
+                center: map.getCenter(),
+                zoom: map.getZoom(),
+                layers: {}
+            };
+            
+            for (const url in loadedLayers) {
+                config.layers[url] = {
+                    name: loadedLayers[url].name,
+                    visible: map.hasLayer(loadedLayers[url].layer),
+                    color: loadedLayers[url].color
+                };
+            }
+            
+            localStorage.setItem('geoportalDurangoConfig', JSON.stringify(config));
+            alert('Configuración guardada correctamente. Se restaurará en tu próxima visita.');
+        });
+        
+        // Cargar configuración guardada
+        function loadConfig() {
+            const savedConfig = localStorage.getItem('geoportalDurangoConfig');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    
+                    // Cargar mapa base
+                    if (config.baseMap) {
+                        document.querySelectorAll('.base-map-btn').forEach(btn => {
+                            if (btn.getAttribute('data-base') === config.baseMap) {
+                                btn.click();
+                            }
+                        });
+                    }
+                    
+                    // Restaurar vista del mapa
+                    if (config.center && config.zoom) {
+                        map.setView([config.center.lat, config.center.lng], config.zoom);
+                    }
+                    
+                    // Cargar capas
+                    if (config.layers) {
+                        setTimeout(() => {
+                            for (const url in config.layers) {
+                                if (config.layers[url].visible) {
+                                    const layerInfo = availableLayers.find(l => l.url === url);
+                                    if (layerInfo) {
+                                        const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
+                                        if (checkbox) {
+                                            checkbox.checked = true;
+                                            // Usar setTimeout para evitar bloqueos
+                                            setTimeout(() => {
+                                                const color = checkbox.getAttribute('data-color');
+                                                const type = checkbox.getAttribute('data-type');
+                                                const optimize = checkbox.getAttribute('data-optimize') === 'true';
+                                                const pointSize = checkbox.getAttribute('data-point-size') ? 
+                                                    parseInt(checkbox.getAttribute('data-point-size')) : null;
+                                                
+                                                if (optimize) {
+                                                    loadLayer(url, color, type, optimize, pointSize);
+                                                } else {
+                                                    checkbox.dispatchEvent(new Event('change'));
+                                                }
+                                            }, 100);
+                                        }
+                                    }
+                                }
+                            }
+                        }, 500);
+                    }
+                } catch (error) {
+                    console.error("Error cargando configuración:", error);
+                }
+            }
+        }
+        
+        // Inicializar la aplicación
+        function init() {
+            loadAvailableLayers();
+            loadConfig();
+            
+            // Información inicial en el panel
+            document.getElementById('info-content').innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center">
+                        <strong>Bienvenido al Geoportal de Durango</strong><br>
+                        <small>Active capas y haga clic en el mapa o ingrese coordenadas para consultar información</small>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // Iniciar cuando el DOM esté listo
+        if (document.readyState !== 'loading') {
+            init();
+        } else {
+            document.addEventListener('DOMContentLoaded', init);
+        }
+        
+        // Permitir búsqueda con Enter en el campo de coordenadas
+        document.getElementById('coordinates').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('search-coords').click();
+            }
+        });
+        
+        // Función para probar las URLs de las capas
+        function testLayerURLs() {
+            console.log("Probando URLs de capas...");
+            availableLayers.forEach(layer => {
+                console.log(`Probando: ${layer.name}`);
+                console.log(`URL: ${layer.url}`);
+            });
+        }
+        
+        // Ejecutar prueba al cargar (opcional)
+        // testLayerURLs();
+    </script>
+</body>
+</html>
+
+
+
