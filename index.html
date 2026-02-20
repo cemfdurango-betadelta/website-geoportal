@@ -1,5 +1,6 @@
-Versión 5 
->Mejora botón de pantalla completa
+Versión 8
+> acceder a la ubicación y mejoras relacionadas
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -70,29 +71,13 @@ Versión 5
         .map-container {
             flex: 1;
             position: relative;
+            height: 100vh;
         }
         
         #map {
-            height: 60%;
+            height: 100%;
             width: 100%;
             z-index: 1;
-        }
-        
-        .info-panel {
-            height: 40%;
-            padding: 15px;
-            background-color: #fff;
-            border-top: 3px solid #16213e;
-            overflow-y: auto;
-            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .panel-title {
-            font-size: 1.2rem;
-            color: #16213e;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #4cc9f0;
         }
         
         .card {
@@ -128,6 +113,15 @@ Versión 5
             background: linear-gradient(135deg, #3a0ca3 0%, #4361ee 100%);
         }
         
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            border: none;
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+        }
+        
         .coordinates-input {
             display: flex;
             gap: 10px;
@@ -154,31 +148,6 @@ Versión 5
             border-radius: 4px;
             margin-right: 10px;
             flex-shrink: 0;
-        }
-        
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .info-table th {
-            background-color: #16213e;
-            color: white;
-            text-align: left;
-            padding: 12px;
-        }
-        
-        .info-table td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .info-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        
-        .info-table tr:hover {
-            background-color: #f0f7ff;
         }
         
         .layer-name {
@@ -233,10 +202,6 @@ Versión 5
             
             #map {
                 height: 60%;
-            }
-            
-            .info-panel {
-                height: 40%;
             }
         }
         
@@ -296,29 +261,50 @@ Versión 5
             pointer-events: none !important;
         }
         
-        /* ESTILOS PARA BOTÓN DE PANTALLA COMPLETA */
-        .leaflet-control-fullscreen a {
+        /* ESTILOS PARA BOTONES DE CONTROL */
+        .leaflet-control-fullscreen a,
+        .leaflet-control-location a {
             background: #fff;
             border-radius: 4px;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
             text-align: center;
             text-decoration: none;
             color: #333;
             font-size: 18px;
             font-weight: bold;
             display: block;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        .leaflet-control-fullscreen a:hover {
+        .leaflet-control-fullscreen a:hover,
+        .leaflet-control-location a:hover {
             background: #f4f4f4;
         }
         
-        .leaflet-control-fullscreen-button {
+        .leaflet-control-fullscreen-button,
+        .leaflet-control-location-button {
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        
+        .leaflet-control-location.active a {
+            background: #4361ee;
+            color: white;
+        }
+        
+        .leaflet-control-location.locating a {
+            background: #ffc107;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
         
         /* Estilos para pantalla completa del mapa */
@@ -336,27 +322,59 @@ Versión 5
             height: 100% !important;
         }
         
-        .map-container.fullscreen .info-panel {
-            display: none !important;
+        /* Estilos para popups - sin auto-pan */
+        .leaflet-popup {
+            margin-bottom: 20px;
         }
         
-        .map-container:not(.fullscreen) #map {
-            height: 60%;
+        /* Evitar que el mapa se mueva al abrir popups */
+        .leaflet-popup-pane {
+            pointer-events: auto;
         }
         
-        .map-container:not(.fullscreen) .info-panel {
-            display: block;
+        /* Marcador de ubicación actual */
+        .ubicacion-actual-marker {
+            background-color: transparent;
+        }
+        
+        .ubicacion-actual-marker i {
+            background-color: #4285F4;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            position: relative;
+            animation: pulse-blue 1.5s infinite;
+        }
+        
+        .ubicacion-actual-marker i:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+        
+        @keyframes pulse-blue {
+            0% {
+                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(66, 133, 244, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo-container">
-            <div class="logo">🌎</div>
-            <h1>Geoportal del Estado de Durango</h1>
-        </div>
-    </header>
-
     <div class="main-container">
         <div class="sidebar">
             <div class="card">
@@ -412,35 +430,36 @@ Versión 5
                     </div>
                 </div>
             </div>
+
+            <div class="card">
+                <div class="card-header">Mi Ubicación</div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" id="mi-ubicacion-btn">
+                            📍 Ir a mi ubicación actual
+                        </button>
+                    </div>
+                    <div id="ubicacion-error" class="error-message mt-2" style="display: none;"></div>
+                </div>
+            </div>
         </div>
         
         <div class="map-container" id="map-container">
             <div id="map"></div>
-            <div class="info-panel">
-                <h3 class="panel-title">Información de la Ubicación</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr>
-                            <th>Capa</th>
-                            <th>Atributo</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody id="info-content">
-                        <tr>
-                            <td colspan="3" class="text-center">Ingrese coordenadas para consultar información</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script>
-        // Inicializar el mapa centrado en Durango
-        const map = L.map('map').setView([24.8295, -104.8555], 7);
+        // Inicializar el mapa centrado en Durango con opciones para evitar auto-pan
+        const map = L.map('map', {
+            center: [24.8295, -104.8555],
+            zoom: 7,
+            autoPan: false,           // Deshabilitar auto-pan global
+            autoPanOnFocus: false,     // Deshabilitar auto-pan al recibir foco
+            closePopupOnClick: true
+        });
         
         // Definir mapas base (TODOS LOS MAPAS BASE ORIGINALES)
         const baseMaps = {
@@ -465,6 +484,11 @@ Versión 5
         
         // Añadir OpenStreetMap como mapa base por defecto
         baseMaps.osm.addTo(map);
+        
+        // Variables para el control de ubicación
+        let ubicacionMarker = null;
+        let ubicacionActiva = false;
+        let ubicacionWatchId = null;
         
         // ===== CONTROL DE PANTALLA COMPLETA PARA EL MAPA =====
         L.Control.MapFullscreen = L.Control.extend({
@@ -495,33 +519,21 @@ Versión 5
                 const isFullscreen = mapContainer.classList.contains('fullscreen');
                 
                 if (!isFullscreen) {
-                    // Entrar en pantalla completa del mapa
                     mapContainer.classList.add('fullscreen');
-                    
-                    // Ocultar sidebar
                     document.querySelector('.sidebar').style.display = 'none';
-                    
-                    // Redimensionar el mapa
                     setTimeout(() => {
                         map.invalidateSize();
                     }, 100);
                     
-                    // Cambiar ícono (opcional)
                     this.getContainer().querySelector('a').innerHTML = '✕';
                     this.getContainer().querySelector('a').title = 'Salir de pantalla completa';
                 } else {
-                    // Salir de pantalla completa
                     mapContainer.classList.remove('fullscreen');
-                    
-                    // Mostrar sidebar
                     document.querySelector('.sidebar').style.display = 'flex';
-                    
-                    // Redimensionar el mapa
                     setTimeout(() => {
                         map.invalidateSize();
                     }, 100);
                     
-                    // Cambiar ícono (opcional)
                     this.getContainer().querySelector('a').innerHTML = '⛶';
                     this.getContainer().querySelector('a').title = 'Pantalla completa del mapa';
                 }
@@ -538,6 +550,49 @@ Versión 5
             title: 'Ver mapa en pantalla completa'
         }).addTo(map);
         
+        // ===== CONTROL DE UBICACIÓN (BOTÓN EN EL MAPA) =====
+        L.Control.LocationButton = L.Control.extend({
+            options: {
+                position: 'topright',
+                title: 'Ir a mi ubicación',
+                forceSeparateButton: true
+            },
+            
+            onAdd: function(map) {
+                const container = L.DomUtil.create('div', 'leaflet-control-location leaflet-bar leaflet-control');
+                
+                const link = L.DomUtil.create('a', 'leaflet-control-location-button leaflet-bar-part', container);
+                link.href = '#';
+                link.title = this.options.title;
+                link.innerHTML = '📍';
+                
+                L.DomEvent
+                    .on(link, 'click', L.DomEvent.stopPropagation)
+                    .on(link, 'click', L.DomEvent.preventDefault)
+                    .on(link, 'click', function() {
+                        obtenerUbicacionActual(true);
+                        
+                        // Feedback visual
+                        link.classList.add('locating');
+                        setTimeout(() => {
+                            link.classList.remove('locating');
+                        }, 2000);
+                    }, this);
+                
+                return container;
+            }
+        });
+        
+        L.control.locationButton = function(options) {
+            return new L.Control.LocationButton(options);
+        };
+        
+        // Añadir el botón de ubicación al mapa
+        L.control.locationButton({
+            position: 'topright',
+            title: 'Ir a mi ubicación'
+        }).addTo(map);
+        
         // Manejar la tecla Escape para salir de pantalla completa
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
@@ -549,7 +604,6 @@ Versión 5
                         map.invalidateSize();
                     }, 100);
                     
-                    // Actualizar ícono
                     const fullscreenBtn = document.querySelector('.leaflet-control-fullscreen-button');
                     if (fullscreenBtn) {
                         fullscreenBtn.innerHTML = '⛶';
@@ -564,15 +618,12 @@ Versión 5
             btn.addEventListener('click', function() {
                 const baseMap = this.getAttribute('data-base');
                 
-                // Quitar todos los mapas base
                 for (const key in baseMaps) {
                     map.removeLayer(baseMaps[key]);
                 }
                 
-                // Añadir el mapa base seleccionado
                 baseMaps[baseMap].addTo(map);
                 
-                // Actualizar botones activos
                 document.querySelectorAll('.base-map-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
             });
@@ -590,14 +641,14 @@ Versión 5
                 type: "polygon"
             },
             {
-                name: "Red hidrológica",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/geojson/hidrologia.geojson",
+                name: "Brigadas",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Brigadas_General.geojson",
                 color: "#4361ee",
-                type: "line"
+                type: "point"
             },
             {
                 name: "Red vial",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main//Red_vial2.geojson",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Red_vial2.geojson",
                 color: "#4cc9f0",
                 type: "line"
             },
@@ -610,16 +661,15 @@ Versión 5
             {
                 name: "Localidades",
                 url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Localidades_Dgo.geojson",
-                color: "#FF0000",  // Cambiado a rojo para mejor visibilidad
+                color: "#FF0000",
                 type: "point",
-                // CONFIGURACIÓN OPTIMIZADA SOLO PARA LOCALIDADES
-                optimize: true,            // Activar optimización
-                minZoom: 8,                // Mostrar solo desde zoom 8
-                pointSize: 3,              // Puntos pequeños como QGIS
-                cluster: true,             // Agrupar puntos
-                clusterRadius: 50,         // Radio de agrupación
-                showLabelsAtZoom: 9,      // Etiquetas solo en zoom alto
-                maxPoints: 1500            // Límite para rendimiento
+                optimize: true,
+                minZoom: 8,
+                pointSize: 3,
+                cluster: true,
+                clusterRadius: 50,
+                showLabelsAtZoom: 9,
+                maxPoints: 1500
             },
             {
                 name: "ANP",
@@ -633,12 +683,18 @@ Versión 5
                 color: "#7209b7",
                 type: "polygon"
             },
-             {
-                name: "Brigadas",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Brigadas_General.geojson",
-                color: "#4361ee",
+            {
+                name: "RH_NAZAS_AGUANAVAL",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/260120_RH_NAZAS_AGUANAVAL_GEO.geojson",
+                color: "#63a4ff",
                 type: "point"
-            }
+            },
+            {
+                name: "Proximamente cuerpos de agua",
+                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/geojson/hidrologia.geojson",
+                color: "#4361ee",
+                type: "line"
+            },
         ];
         
         // Cargar lista de capas disponibles
@@ -651,7 +707,6 @@ Versión 5
                 const layerItem = document.createElement('div');
                 layerItem.className = 'layer-item';
                 
-                // Añadir atributos extra para localidades optimizadas
                 const extraAttrs = layer.optimize ? 
                     `data-optimize="true" data-point-size="${layer.pointSize || 3}"` : '';
                 
@@ -669,7 +724,6 @@ Versión 5
                 `;
                 layersList.appendChild(layerItem);
                 
-                // Evento para cargar capa cuando se selecciona
                 const checkbox = layerItem.querySelector('.layer-checkbox');
                 checkbox.addEventListener('change', function() {
                     const url = this.getAttribute('data-url');
@@ -690,19 +744,13 @@ Versión 5
         
         // Cargar una capa desde GitHub
         function loadLayer(url, color, type, optimize = false, pointSize = null) {
-            // Evitar cargar la misma capa múltiples veces
             if (loadedLayers[url]) {
                 return;
             }
             
-            // Mostrar indicador de carga
-            const layerId = `layer-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
             addToActiveLayersList(url, getLayerNameByUrl(url), color, true);
-            
-            // Ocultar mensajes de error previos
             document.getElementById('layer-error').style.display = 'none';
             
-            // Cargar el GeoJSON desde GitHub
             fetch(url)
                 .then(response => {
                     if (!response.ok) {
@@ -711,15 +759,12 @@ Versión 5
                     return response.json();
                 })
                 .then(data => {
-                    // Procesar los datos geoespaciales (SOLO LOCALIDADES OPTIMIZADAS)
                     const layer = optimize ? 
                         processLocalidadesOptimizadas(data, color, pointSize) : 
                         processGeoJSONNormal(data, color, type);
                     
-                    // Añadir la capa al mapa
                     layer.addTo(map);
                     
-                    // Guardar referencia a la capa
                     loadedLayers[url] = {
                         layer: layer,
                         name: getLayerNameByUrl(url),
@@ -728,21 +773,17 @@ Versión 5
                         data: data
                     };
                     
-                    // Actualizar la lista de capas activas
                     updateActiveLayersList(url, getLayerNameByUrl(url), color);
                 })
                 .catch(error => {
                     console.error('Error cargando la capa:', error);
                     
-                    // Mostrar mensaje de error al usuario
                     const errorElement = document.getElementById('layer-error');
                     errorElement.textContent = `Error al cargar la capa: ${error.message}`;
                     errorElement.style.display = 'block';
                     
-                    // Eliminar la capa de la lista activa
                     removeLayer(url);
                     
-                    // Desmarcar el checkbox
                     const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
                     if (checkbox) {
                         checkbox.checked = false;
@@ -760,7 +801,6 @@ Versión 5
         function processLocalidadesOptimizadas(data, color, pointSize = 3) {
             console.log(`Procesando Localidades optimizadas: ${data.features.length} puntos`);
             
-            // 1. LIMITAR PUNTOS SI SON DEMASIADOS (MEJOR RENDIMIENTO)
             let features = data.features;
             const maxPoints = 10500;
             
@@ -771,78 +811,68 @@ Versión 5
                 data.features = features;
             }
             
-            // 2. CREAR CLUSTER PARA AGRUPACIÓN
             const markers = L.markerClusterGroup({
-                chunkedLoading: true,     // Carga por partes
-                chunkDelay: 50,           // Más rápido
-                maxClusterRadius: 50,     // Radio de agrupación
-                spiderfyOnMaxZoom: true,  // Separar al hacer clic
+                chunkedLoading: true,
+                chunkDelay: 50,
+                maxClusterRadius: 50,
+                spiderfyOnMaxZoom: true,
                 showCoverageOnHover: false,
-                zoomToBoundsOnClick: true,
-                disableClusteringAtZoom: 9 // Desactivar clustering en zoom alto
+                zoomToBoundsOnClick: false,
+                disableClusteringAtZoom: 9,
+                removeOutsideVisibleBounds: true,
+                animate: true,
+                animateAddingMarkers: false,
+                singleMarkerMode: false
             });
             
-            // Array para almacenar TODAS las etiquetas (labelMarkers)
             const todasLasEtiquetas = [];
             
-            // 3. CREAR PUNTOS SIMPLES LOCALIDAD
             const geoJsonLayer = L.geoJSON(data, {
                 pointToLayer: function(feature, latlng) {
-                    // Punto pequeño y simple
                     return L.circleMarker(latlng, {
                         color: color,
                         fillColor: color,
-                        fillOpacity: 0.85,     // Más opaco para mejor visibilidad
-                        radius: pointSize,     // Punto pequeño (3px)
-                        weight: 1,             // Borde fino
+                        fillOpacity: 0.85,
+                        radius: pointSize,
+                        weight: 1,
                         className: 'localidad-punto'
                     });
                 },
                 onEachFeature: function(feature, layer) {
                     if (feature.properties) {
-                        // Obtener nombre
                         const nombre = feature.properties.NOMBRE || 
                                      feature.properties.nombre || 
                                      feature.properties.Nombre || 
                                      'Sin nombre';
                         
-                        // Obtener las coordenadas del punto desde el layer
                         const latlng = layer.getLatLng();
                         
-                        // TOOLTIP SIMPLE (solo al hover) - CON MARCO
                         layer.bindTooltip(nombre, {
-                            permanent: false,        // Solo al hover
+                            permanent: false,
                             direction: 'top',
                             className: 'localidad-tooltip',
                             offset: [0, -pointSize - 5]
                         });
                         
-                        // ETIQUETA PERMANENTE (zoom >= 9) - SIN MARCO
-                        // Crear un div personalizado para la etiqueta
                         const labelDiv = L.divIcon({
                             className: 'etiqueta-localidad',
                             html: nombre,
-                            iconSize: [100, 20], // Tamaño suficiente para el texto
-                            iconAnchor: [10, 0]  // Posicionado a la derecha del punto
+                            iconSize: [100, 20],
+                            iconAnchor: [10, 0]
                         });
                         
-                        // Crear marcador invisible para la etiqueta
                         const labelMarker = L.marker(latlng, {
                             icon: labelDiv,
-                            interactive: false, // No interactivo
-                            zIndexOffset: 1000  // Encima de los puntos
+                            interactive: false,
+                            zIndexOffset: 1000
                         });
                         
-                        // Guardar referencia al marcador de etiqueta en el layer
                         layer._labelMarker = labelMarker;
-                        // También guardar en el array global para limpiar después
                         todasLasEtiquetas.push(labelMarker);
                         
-                        // POPUP DETALLADO (al hacer clic)
                         let popupContent = `<div style="max-width: 250px;">
                             <strong style="color: ${color}; font-size: 14px;">${nombre}</strong><br>`;
                         
-                        // Campos más importantes
                         const props = feature.properties;
                         const importantFields = ['NOMBRE', 'POBLACION', 'MUNICIPIO', 'TIPO', 'ESTADO'];
                         
@@ -856,18 +886,20 @@ Versión 5
                         });
                         
                         popupContent += `</div>`;
-                        layer.bindPopup(popupContent);
+                        
+                        layer.bindPopup(popupContent, {
+                            autoPan: false,
+                            autoClose: true,
+                            closeOnClick: false,
+                            keepInView: false
+                        });
                     }
                 }
             });
             
-            // 4. AÑADIR AL CLUSTER
             markers.addLayer(geoJsonLayer);
-            
-            // Guardar referencia al array de etiquetas en el cluster para poder limpiarlas
             markers._todasLasEtiquetas = todasLasEtiquetas;
             
-            // 5. CONTROL DE ETIQUETAS SEGÚN ZOOM - MODIFICADO
             const labelZoom = 9;
             
             function updateLabels() {
@@ -876,16 +908,13 @@ Versión 5
                 
                 geoJsonLayer.eachLayer(function(layer) {
                     if (showLabels) {
-                        // Mostrar etiqueta sin marco
                         if (layer._labelMarker && !map.hasLayer(layer._labelMarker)) {
                             layer._labelMarker.addTo(map);
                         }
-                        // Ocultar tooltip con marco
                         if (layer._tooltip && layer._tooltip.isOpen()) {
                             layer.closeTooltip();
                         }
                     } else {
-                        // Ocultar etiqueta sin marco
                         if (layer._labelMarker && map.hasLayer(layer._labelMarker)) {
                             map.removeLayer(layer._labelMarker);
                         }
@@ -893,16 +922,13 @@ Versión 5
                 });
             }
             
-            // Escuchar cambios de zoom
             const zoomListener = function() {
                 updateLabels();
             };
             map.on('zoomend', zoomListener);
             
-            // Guardar referencia al event listener para poder removerlo después
             markers._zoomListener = zoomListener;
             
-            // Inicializar etiquetas
             setTimeout(updateLabels, 100);
             
             return markers;
@@ -911,7 +937,6 @@ Versión 5
         // ===== FUNCIÓN ORIGINAL PARA OTRAS CAPAS =====
         function processGeoJSONNormal(data, color, type) {
             try {
-                // Determinar el estilo según el tipo de geometría
                 const style = {
                     color: color,
                     weight: type === 'line' ? 3 : 2,
@@ -920,7 +945,6 @@ Versión 5
                     fillOpacity: type === 'line' ? 0 : 0.2
                 };
                 
-                // Crear la capa GeoJSON
                 return L.geoJSON(data, {
                     style: style,
                     onEachFeature: function(feature, layer) {
@@ -930,7 +954,12 @@ Versión 5
                                 popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
                             }
                             popupContent += "</div>";
-                            layer.bindPopup(popupContent);
+                            
+                            layer.bindPopup(popupContent, {
+                                autoPan: false,
+                                autoClose: true,
+                                closeOnClick: false
+                            });
                         }
                     }
                 });
@@ -940,10 +969,9 @@ Versión 5
             }
         }
         
-        // ===== FUNCIÓN MODIFICADA PARA ELIMINAR CAPAS =====
+        // ===== FUNCIÓN PARA ELIMINAR CAPAS =====
         function removeLayer(url) {
             if (loadedLayers[url]) {
-                // 1. Limpiar etiquetas si es capa de localidades optimizadas
                 if (loadedLayers[url].layer._todasLasEtiquetas) {
                     loadedLayers[url].layer._todasLasEtiquetas.forEach(labelMarker => {
                         if (map.hasLayer(labelMarker)) {
@@ -952,22 +980,18 @@ Versión 5
                     });
                 }
                 
-                // 2. Remover el event listener de zoom si existe
                 if (loadedLayers[url].layer._zoomListener) {
                     map.off('zoomend', loadedLayers[url].layer._zoomListener);
                 }
                 
-                // 3. Remover la capa principal
                 map.removeLayer(loadedLayers[url].layer);
                 delete loadedLayers[url];
                 
-                // 4. Eliminar de la lista de capas activas
                 const layerElement = document.getElementById(`active-${url.replace(/[^a-zA-Z0-9]/g, '-')}`);
                 if (layerElement) {
                     layerElement.remove();
                 }
                 
-                // 5. Desmarcar el checkbox en la lista de disponibles
                 const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
                 if (checkbox) {
                     checkbox.checked = false;
@@ -991,7 +1015,6 @@ Versión 5
             
             document.getElementById('active-layers').appendChild(layerItem);
             
-            // Evento para eliminar capa
             if (!loading) {
                 layerItem.querySelector('.remove-layer').addEventListener('click', function() {
                     removeLayer(url);
@@ -1011,12 +1034,160 @@ Versión 5
                     <button class="btn btn-sm btn-danger remove-layer" data-url="${url}">X</button>
                 `;
                 
-                // Evento para eliminar capa
                 layerElement.querySelector('.remove-layer').addEventListener('click', function() {
                     removeLayer(url);
                 });
             }
         }
+        
+        // ===== FUNCIÓN DE UBICACIÓN ACTUAL =====
+        function obtenerUbicacionActual(centrarMapa = true) {
+            const errorElement = document.getElementById('ubicacion-error');
+            errorElement.style.display = 'none';
+            
+            if (!navigator.geolocation) {
+                errorElement.textContent = 'Tu navegador no soporta geolocalización.';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            const miUbicacionBtn = document.getElementById('mi-ubicacion-btn');
+            const originalText = miUbicacionBtn.innerHTML;
+            miUbicacionBtn.innerHTML = '📍 Localizando...';
+            miUbicacionBtn.disabled = true;
+            
+            // Configurar opciones de geolocalización
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            };
+            
+            function exito(posicion) {
+                const lat = posicion.coords.latitude;
+                const lng = posicion.coords.longitude;
+                const precision = posicion.coords.accuracy;
+                
+                console.log(`Ubicación obtenida: ${lat}, ${lng} (precisión: ${precision}m)`);
+                
+                // Eliminar marcador anterior si existe
+                if (ubicacionMarker) {
+                    map.removeLayer(ubicacionMarker);
+                }
+                
+                // Crear un icono personalizado para la ubicación actual
+                const ubicacionIcon = L.divIcon({
+                    className: 'ubicacion-actual-marker',
+                    html: '<i></i>',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+                
+                // Añadir marcador en la ubicación
+                ubicacionMarker = L.marker([lat, lng], {
+                    icon: ubicacionIcon,
+                    zIndexOffset: 1000,
+                    autoPan: false
+                }).addTo(map);
+                
+                // Añadir un círculo que muestre la precisión
+                const precisionCircle = L.circle([lat, lng], {
+                    radius: precision,
+                    color: '#4285F4',
+                    weight: 1,
+                    fillColor: '#4285F4',
+                    fillOpacity: 0.1,
+                    className: 'precision-circle'
+                }).addTo(map);
+                
+                // Guardar referencia al círculo
+                ubicacionMarker._precisionCircle = precisionCircle;
+                
+                // Popup con información de la ubicación
+                ubicacionMarker.bindPopup(`
+                    <div style="text-align: center;">
+                        <strong>📍 Tu ubicación actual</strong><br>
+                        <small>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}</small><br>
+                        <small>Precisión: ±${Math.round(precision)} metros</small>
+                    </div>
+                `, { autoPan: false });
+                
+                // Centrar el mapa si se solicita
+                if (centrarMapa) {
+                    map.setView([lat, lng], 15);
+                }
+                
+                // Abrir popup automáticamente
+                setTimeout(() => {
+                    if (ubicacionMarker) {
+                        ubicacionMarker.openPopup();
+                    }
+                }, 300);
+                
+                // Restaurar botón
+                miUbicacionBtn.innerHTML = originalText;
+                miUbicacionBtn.disabled = false;
+                
+                // Actualizar campo de coordenadas
+                document.getElementById('coordinates').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            }
+            
+            function error(err) {
+                console.error('Error de geolocalización:', err);
+                
+                let mensajeError = 'Error al obtener tu ubicación: ';
+                switch(err.code) {
+                    case err.PERMISSION_DENIED:
+                        mensajeError += 'Permiso denegado. Por favor, permite el acceso a tu ubicación.';
+                        break;
+                    case err.POSITION_UNAVAILABLE:
+                        mensajeError += 'Información de ubicación no disponible.';
+                        break;
+                    case err.TIMEOUT:
+                        mensajeError += 'Tiempo de espera agotado.';
+                        break;
+                    default:
+                        mensajeError += 'Error desconocido.';
+                }
+                
+                errorElement.textContent = mensajeError;
+                errorElement.style.display = 'block';
+                
+                // Restaurar botón
+                miUbicacionBtn.innerHTML = originalText;
+                miUbicacionBtn.disabled = false;
+            }
+            
+            // Solicitar ubicación
+            navigator.geolocation.getCurrentPosition(exito, error, options);
+            
+            // También iniciar seguimiento para mantener actualizada (opcional)
+            if (ubicacionWatchId === null) {
+                ubicacionWatchId = navigator.geolocation.watchPosition(
+                    (posicion) => {
+                        // Actualizar marcador si ya existe y el usuario está en modo seguimiento
+                        if (ubicacionActiva && ubicacionMarker) {
+                            const nuevaLat = posicion.coords.latitude;
+                            const nuevaLng = posicion.coords.longitude;
+                            
+                            ubicacionMarker.setLatLng([nuevaLat, nuevaLng]);
+                            if (ubicacionMarker._precisionCircle) {
+                                ubicacionMarker._precisionCircle.setLatLng([nuevaLat, nuevaLng]);
+                                ubicacionMarker._precisionCircle.setRadius(posicion.coords.accuracy);
+                            }
+                        }
+                    },
+                    error,
+                    options
+                );
+            }
+        }
+        
+        // Evento para el botón de ubicación en el sidebar
+        document.getElementById('mi-ubicacion-btn').addEventListener('click', function() {
+            obtenerUbicacionActual(true);
+        });
         
         // Función para buscar coordenadas
         document.getElementById('search-coords').addEventListener('click', function() {
@@ -1024,104 +1195,32 @@ Versión 5
             const coords = coordsInput.split(',').map(coord => parseFloat(coord.trim()));
             
             if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-                // Validar rangos de coordenadas
                 if (coords[0] >= -90 && coords[0] <= 90 && coords[1] >= -180 && coords[1] <= 180) {
                     map.setView(coords, 14);
                     
-                    // Limpiar marcadores existentes
+                    // Limpiar marcadores existentes (excepto el de ubicación actual)
                     map.eachLayer(layer => {
-                        if (layer instanceof L.Marker) {
+                        if (layer instanceof L.Marker && layer !== ubicacionMarker) {
                             map.removeLayer(layer);
                         }
                     });
                     
                     // Añadir nuevo marcador
-                    const marker = L.marker(coords)
-                        .addTo(map)
-                        .bindPopup(`Coordenadas: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`)
-                        .openPopup();
+                    const marker = L.marker(coords, {
+                        autoPan: false
+                    }).addTo(map);
                     
-                    // Cargar información de todas las capas para estas coordenadas
-                    loadDataForCoordinates(coords);
+                    marker.bindPopup(`Coordenadas: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`, {
+                        autoPan: false
+                    }).openPopup();
+                    
                 } else {
-                    alert('Por favor ingrese coordenadas válidas. Latitud entre -90 y 90, Longitud entre -180 y 180.');
+                    alert('Por favor ingrese coordenadas válidas.');
                 }
             } else {
                 alert('Formato incorrecto. Por favor use: latitud, longitud (Ej: 24.8295, -104.8555)');
             }
         });
-        
-        // Función para buscar datos en coordenadas específicas
-        function loadDataForCoordinates(coords) {
-            document.getElementById('info-content').innerHTML = `
-                <tr>
-                    <td colspan="3" class="text-center">Buscando información para: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}</td>
-                </tr>
-            `;
-            
-            // Buscar en las capas cargadas
-            let tableContent = '';
-            let foundData = false;
-            
-            // Crear un punto Leaflet para las consultas
-            const point = L.latLng(coords[0], coords[1]);
-            
-            // Para cada capa cargada, buscar características que contengan el punto
-            for (const url in loadedLayers) {
-                const layerInfo = loadedLayers[url];
-                let layerData = '';
-                
-                try {
-                    // Buscar features que intersecten con el punto
-                    layerInfo.layer.eachLayer(function(featureLayer) {
-                        if (featureLayer.getBounds && featureLayer.getBounds().contains(point)) {
-                            const feature = featureLayer.feature;
-                            if (feature && feature.properties) {
-                                foundData = true;
-                                for (let key in feature.properties) {
-                                    layerData += `
-                                        <tr>
-                                            <td>${layerInfo.name}</td>
-                                            <td>${key}</td>
-                                            <td>${feature.properties[key] || 'N/A'}</td>
-                                        </tr>
-                                    `;
-                                }
-                            }
-                        }
-                    });
-                } catch (error) {
-                    console.error(`Error buscando en ${layerInfo.name}:`, error);
-                }
-                
-                if (layerData) {
-                    tableContent += layerData;
-                } else {
-                    tableContent += `
-                        <tr>
-                            <td>${layerInfo.name}</td>
-                            <td colspan="2">No hay datos en esta ubicación</td>
-                        </tr>
-                    `;
-                }
-            }
-            
-            if (!foundData && Object.keys(loadedLayers).length > 0) {
-                tableContent = `
-                    <tr>
-                        <td colspan="3" class="text-center">No se encontraron datos para estas coordenadas en las capas cargadas</td>
-                    </tr>
-                `;
-            } else if (Object.keys(loadedLayers).length === 0) {
-                tableContent = `
-                    <tr>
-                        <td colspan="3" class="text-center">No hay capas cargadas. Active algunas capas primero.</td>
-                    </tr>
-                `;
-            }
-            
-            document.getElementById('info-content').innerHTML = tableContent;
-        }
         
         // Guardar configuración
         document.getElementById('save-config').addEventListener('click', function() {
@@ -1141,7 +1240,7 @@ Versión 5
             }
             
             localStorage.setItem('geoportalDurangoConfig', JSON.stringify(config));
-            alert('Configuración guardada correctamente. Se restaurará en tu próxima visita.');
+            alert('Configuración guardada correctamente.');
         });
         
         // Cargar configuración guardada
@@ -1151,7 +1250,6 @@ Versión 5
                 try {
                     const config = JSON.parse(savedConfig);
                     
-                    // Cargar mapa base
                     if (config.baseMap) {
                         document.querySelectorAll('.base-map-btn').forEach(btn => {
                             if (btn.getAttribute('data-base') === config.baseMap) {
@@ -1160,12 +1258,10 @@ Versión 5
                         });
                     }
                     
-                    // Restaurar vista del mapa
                     if (config.center && config.zoom) {
                         map.setView([config.center.lat, config.center.lng], config.zoom);
                     }
                     
-                    // Cargar capas
                     if (config.layers) {
                         setTimeout(() => {
                             for (const url in config.layers) {
@@ -1175,7 +1271,6 @@ Versión 5
                                         const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
                                         if (checkbox) {
                                             checkbox.checked = true;
-                                            // Usar setTimeout para evitar bloqueos
                                             setTimeout(() => {
                                                 const color = checkbox.getAttribute('data-color');
                                                 const type = checkbox.getAttribute('data-type');
@@ -1205,46 +1300,28 @@ Versión 5
         function init() {
             loadAvailableLayers();
             loadConfig();
-            
-            // Información inicial en el panel
-            document.getElementById('info-content').innerHTML = `
-                <tr>
-                    <td colspan="3" class="text-center">
-                        <strong>Bienvenido al Geoportal de Durango</strong><br>
-                        <small>Active capas y haga clic en el mapa o ingrese coordenadas para consultar información</small>
-                    </td>
-                </tr>
-            `;
+            console.log('Geoportal de Durango iniciado correctamente');
         }
         
-        // Iniciar cuando el DOM esté listo
         if (document.readyState !== 'loading') {
             init();
         } else {
             document.addEventListener('DOMContentLoaded', init);
         }
         
-        // Permitir búsqueda con Enter en el campo de coordenadas
         document.getElementById('coordinates').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('search-coords').click();
             }
         });
         
-        // Función para probar las URLs de las capas
-        function testLayerURLs() {
-            console.log("Probando URLs de capas...");
-            availableLayers.forEach(layer => {
-                console.log(`Probando: ${layer.name}`);
-                console.log(`URL: ${layer.url}`);
-            });
-        }
-        
-        // Ejecutar prueba al cargar (opcional)
-        // testLayerURLs();
+        // Limpiar watchPosition al cerrar/recargar la página
+        window.addEventListener('beforeunload', function() {
+            if (ubicacionWatchId !== null) {
+                navigator.geolocation.clearWatch(ubicacionWatchId);
+            }
+        });
     </script>
 </body>
 </html>
-
-
 
