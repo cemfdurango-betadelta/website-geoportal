@@ -1,14 +1,12 @@
-Versión 8
-> acceder a la ubicación y mejoras relacionadas
-
+Versión 10 
+Interfaz tipo Google Maps con un panel inferior deslizable
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geoportal - Estado de Durango</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Geoportal Durango</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <style>
@@ -16,1312 +14,1153 @@ Versión 8
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             height: 100vh;
-            display: flex;
-            flex-direction: column;
+            width: 100vw;
             overflow: hidden;
-            background-color: #f0f2f5;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 24px;
-            margin-right: 15px;
-        }
-        
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-        
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-        
-        .sidebar {
-            width: 350px;
-            background: white;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-        }
-        
-        .map-container {
-            flex: 1;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             position: relative;
-            height: 100vh;
         }
         
         #map {
             height: 100%;
             width: 100%;
-            z-index: 1;
+            background: #e9ecef;
         }
         
-        .card {
-            margin-bottom: 20px;
+        /* Botón flotante - FIX: se mantiene en posición fija relativa al viewport */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1002;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #1a73e8;
             border: none;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }
-        
-        .card-header {
-            background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
             color: white;
-            border-radius: 8px 8px 0 0 !important;
+        }
+        
+        .fab:hover {
+            transform: scale(1.05);
+            background: #1557b0;
+        }
+        
+        .fab:active {
+            transform: scale(0.95);
+        }
+        
+        /* Panel inferior */
+        .panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+            z-index: 1001;
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            will-change: transform;
+        }
+        
+        .panel.collapsed {
+            transform: translateY(calc(100% - 56px));
+        }
+        
+        .panel.half {
+            transform: translateY(calc(100% - 45%));
+        }
+        
+        .panel.expanded {
+            transform: translateY(0);
+        }
+        
+        /* Barra de arrastre mejorada */
+        .handle {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            flex-shrink: 0;
+            position: relative;
+            user-select: none;
+            background: white;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .handle:active {
+            cursor: grabbing;
+        }
+        
+        .handle-bar {
+            width: 40px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+        
+        .panel.half .handle-bar,
+        .panel.expanded .handle-bar {
+            width: 60px;
+            background: #1a73e8;
+        }
+        
+        /* Pestañas */
+        .tabs {
+            display: flex;
+            padding: 0 12px;
+            gap: 4px;
+            border-bottom: 1px solid #eef2ff;
+            flex-shrink: 0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px 0;
+            background: none;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tab.active {
+            color: #1a73e8;
+            background: #f8fafc;
+        }
+        
+        /* Contenido */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab-pane {
+            display: none;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        /* Elementos UI */
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 14px;
             font-weight: 600;
-            padding: 12px 15px;
+            color: #0f172a;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .card-body {
-            padding: 15px;
+        .base-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
         }
         
-        .form-control:focus {
-            border-color: #4361ee;
-            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        .base-btn {
+            padding: 8px 4px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .base-btn:hover {
+            background: #f8fafc;
+            border-color: #1a73e8;
+        }
+        
+        .base-btn.active {
+            border-color: #1a73e8;
+            background: #eef2ff;
+            color: #1a73e8;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: #f8fafc;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #1a73e8;
+            background: white;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
-            border: none;
+            background: #1a73e8;
+            color: white;
         }
         
         .btn-primary:hover {
-            background: linear-gradient(135deg, #3a0ca3 0%, #4361ee 100%);
+            background: #1557b0;
         }
         
         .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-            border: none;
+            background: #10b981;
+            color: white;
         }
         
         .btn-success:hover {
-            background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+            background: #059669;
         }
         
-        .coordinates-input {
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        /* Historial */
+        .history-list {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background 0.1s;
         }
         
-        .coordinates-input .form-control {
+        .history-item:hover {
+            background: #f8fafc;
+        }
+        
+        .history-info {
             flex: 1;
+            min-width: 0;
+        }
+        
+        .history-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .history-coords {
+            font-size: 10px;
+            color: #64748b;
+            font-family: monospace;
+            margin-top: 2px;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: background 0.1s;
+        }
+        
+        .icon-btn:hover {
+            background: #e2e8f0;
+        }
+        
+        .edit-label-input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #1a73e8;
+            border-radius: 10px;
+            font-size: 12px;
+            background: white;
+        }
+        
+        .empty-history {
+            text-align: center;
+            padding: 30px 20px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        
+        /* Capas */
+        .layers-grid {
+            max-height: 280px;
+            overflow-y: auto;
         }
         
         .layer-item {
             display: flex;
             align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f1f5f9;
         }
         
-        .layer-item:last-child {
-            border-bottom: none;
+        .layer-item:hover {
+            background: #f8fafc;
         }
         
         .layer-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
             margin-right: 10px;
             flex-shrink: 0;
         }
         
         .layer-name {
             flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .layer-checkbox {
             margin-right: 10px;
-        }
-        
-        .base-maps-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .base-map-btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 8px;
-            border: 2px solid transparent;
-            border-radius: 5px;
-            background: #f0f5ff;
+            width: 18px;
+            height: 18px;
             cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
+            flex-shrink: 0;
         }
         
-        .base-map-btn.active {
-            border-color: #4361ee;
-            background: #e0eaff;
-            font-weight: bold;
-        }
-        
-        .base-map-btn:hover {
-            background: #e0eaff;
-        }
-        
-        .error-message {
-            color: #dc3545;
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-        
-        @media (max-width: 992px) {
-            .main-container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: 40%;
-            }
-            
-            #map {
-                height: 60%;
-            }
-        }
-        
-        .spinner-border {
-            width: 1rem;
-            height: 1rem;
-        }
-        
-        /* ESTILOS SOLO PARA LOCALIDADES OPTIMIZADAS */
-        .localidad-punto {
-            stroke-width: 1px;
-            stroke-opacity: 0.9;
-            fill-opacity: 0.8;
-        }
-        
-        /* Cluster styles optimizados */
-        .marker-cluster-small {
-            background-color: rgba(255, 0, 0, 0.3);
-        }
-        .marker-cluster-small div {
-            background-color: rgba(255, 0, 0, 0.6);
-            color: white;
-        }
-        
-        .marker-cluster-medium {
-            background-color: rgba(255, 0, 0, 0.4);
-        }
-        .marker-cluster-medium div {
-            background-color: rgba(255, 0, 0, 0.7);
-            color: white;
-        }
-        
-        .marker-cluster-large {
-            background-color: rgba(255, 0, 0, 0.5);
-        }
-        .marker-cluster-large div {
-            background-color: rgba(255, 0, 0, 0.8);
-            color: white;
-        }
-        
-        /* ESTILO MODIFICADO: TEXTO SIN MARCO BLANCO */
-        .etiqueta-localidad {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            font-size: 11px !important;
-            font-weight: bold !important;
-            color: #000000 !important;
-            text-shadow: 
-                1px 1px 2px rgba(255, 255, 255, 0.8),
-                -1px -1px 2px rgba(255, 255, 255, 0.8),
-                1px -1px 2px rgba(255, 255, 255, 0.8),
-                -1px 1px 2px rgba(255, 255, 255, 0.8) !important;
-            white-space: nowrap !important;
-            pointer-events: none !important;
-        }
-        
-        /* ESTILOS PARA BOTONES DE CONTROL */
-        .leaflet-control-fullscreen a,
-        .leaflet-control-location a {
-            background: #fff;
-            border-radius: 4px;
-            width: 36px;
-            height: 36px;
-            line-height: 36px;
-            text-align: center;
-            text-decoration: none;
-            color: #333;
-            font-size: 18px;
-            font-weight: bold;
-            display: block;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .leaflet-control-fullscreen a:hover,
-        .leaflet-control-location a:hover {
-            background: #f4f4f4;
-        }
-        
-        .leaflet-control-fullscreen-button,
-        .leaflet-control-location-button {
+        .active-layer {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
         }
         
-        .leaflet-control-location.active a {
-            background: #4361ee;
-            color: white;
+        .remove-layer {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 6px;
         }
         
-        .leaflet-control-location.locating a {
-            background: #ffc107;
-            color: white;
-            animation: pulse 1.5s infinite;
+        .remove-layer:hover {
+            background: #fee2e2;
         }
         
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
+        .error {
+            color: #ef4444;
+            font-size: 11px;
+            margin-top: 6px;
         }
         
-        /* Estilos para pantalla completa del mapa */
-        .map-container.fullscreen {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 9999 !important;
-            background: white;
-        }
-        
-        .map-container.fullscreen #map {
-            height: 100% !important;
-        }
-        
-        /* Estilos para popups - sin auto-pan */
-        .leaflet-popup {
-            margin-bottom: 20px;
-        }
-        
-        /* Evitar que el mapa se mueva al abrir popups */
-        .leaflet-popup-pane {
-            pointer-events: auto;
-        }
-        
-        /* Marcador de ubicación actual */
-        .ubicacion-actual-marker {
-            background-color: transparent;
-        }
-        
-        .ubicacion-actual-marker i {
-            background-color: #4285F4;
-            border: 3px solid white;
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #1a73e8;
             border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            animation: spin 0.6s linear infinite;
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            position: relative;
-            animation: pulse-blue 1.5s infinite;
         }
         
-        .ubicacion-actual-marker i:after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 10px;
-            height: 10px;
-            background: white;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Marcador ubicación */
+        .location-marker {
+            background: #1a73e8;
+            border: 2px solid white;
             border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 0 0 2px rgba(26,115,232,0.3);
         }
         
-        @keyframes pulse-blue {
-            0% {
-                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.7);
+        /* Estilos para tooltips y etiquetas de localidades */
+        .localidad-tooltip {
+            font-size: 11px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ff0000;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .localidad-etiqueta {
+            background: transparent;
+            border: none;
+            font-size: 11px;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white;
+            white-space: nowrap;
+        }
+        
+        .mt-2 { margin-top: 8px; }
+        
+        @media (max-width: 640px) {
+            .fab {
+                bottom: 16px;
+                right: 16px;
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
             }
-            70% {
-                box-shadow: 0 0 0 10px rgba(66, 133, 244, 0);
+            
+            .panel.collapsed {
+                transform: translateY(calc(100% - 48px));
             }
-            100% {
-                box-shadow: 0 0 0 0 rgba(66, 133, 244, 0);
+            
+            .handle {
+                height: 32px;
+            }
+            
+            .content {
+                padding: 12px;
+            }
+            
+            .base-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .base-btn {
+                padding: 8px;
+                font-size: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="sidebar">
-            <div class="card">
-                <div class="card-header">Mapas Base</div>
-                <div class="card-body">
-                    <div class="base-maps-container">
-                        <div class="base-map-btn active" data-base="osm">OpenStreetMap</div>
-                        <div class="base-map-btn" data-base="google">Google Híbrido</div>
-                        <div class="base-map-btn" data-base="esri">Esri Satélite</div>
-                        <div class="base-map-btn" data-base="relieve">Relieve/Topografía</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">Control de Capas</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Cargar capas desde GitHub:</label>
-                        <div id="github-layers-list">
-                            <!-- Las capas disponibles se cargarán aquí mediante JavaScript -->
-                        </div>
-                        <div id="layer-error" class="error-message" style="display: none;"></div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Capas activas:</label>
-                        <div class="layer-list" id="active-layers">
-                            <!-- Las capas activas se agregarán aquí dinámicamente -->
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary" id="save-config">
-                            Guardar configuración
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">Consulta por Coordenadas</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="coordinates" class="form-label">Ingrese coordenadas (lat, long):</label>
-                        <div class="coordinates-input">
-                            <input type="text" class="form-control" id="coordinates" placeholder="Ej: 24.8295, -104.8555">
-                            <button class="btn btn-primary" id="search-coords">
-                                Buscar
-                            </button>
-                        </div>
-                        <div class="form-text">Formato decimal: latitud, longitud</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">Mi Ubicación</div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-success" id="mi-ubicacion-btn">
-                            📍 Ir a mi ubicación actual
-                        </button>
-                    </div>
-                    <div id="ubicacion-error" class="error-message mt-2" style="display: none;"></div>
-                </div>
-            </div>
+    <div id="map"></div>
+    
+    <button class="fab" id="fabBtn">🗺️</button>
+    
+    <div class="panel collapsed" id="panel">
+        <div class="handle" id="handle">
+            <div class="handle-bar"></div>
         </div>
         
-        <div class="map-container" id="map-container">
-            <div id="map"></div>
+        <div class="tabs">
+            <button class="tab active" data-tab="layers">🗺️ Capas</button>
+            <button class="tab" data-tab="locations">📍 Lugares</button>
+            <button class="tab" data-tab="tools">⚙️ Herramientas</button>
+        </div>
+        
+        <div class="content">
+            <!-- Capas -->
+            <div class="tab-pane active" id="layersPane">
+                <div class="section">
+                    <div class="section-title">🗺️ Mapas Base</div>
+                    <div class="base-grid" id="baseGrid">
+                        <button class="base-btn active" data-base="osm">🌍 OSM</button>
+                        <button class="base-btn" data-base="google">🛰️ Google</button>
+                        <button class="base-btn" data-base="esri">📡 Esri</button>
+                        <button class="base-btn" data-base="relieve">⛰️ Relieve</button>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">📁 Capas Temáticas</div>
+                    <div class="layers-grid" id="layersList"></div>
+                    <div id="layerError" class="error" style="display:none"></div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">✅ Capas Activas</div>
+                    <div id="activeList"></div>
+                </div>
+            </div>
+            
+            <!-- Lugares guardados -->
+            <div class="tab-pane" id="locationsPane">
+                <div class="section">
+                    <div class="section-title">🔍 Buscar coordenadas</div>
+                    <div class="search-box">
+                        <input type="text" id="coordInput" placeholder="Ej: 24.8295, -104.8555">
+                        <button class="btn btn-primary btn-sm" id="searchBtn">Buscar</button>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">
+                        <span>📍 Mis lugares (25)</span>
+                        <button id="clearAllBtn" style="background:#fee2e2; color:#dc2626; border:none; padding:4px 12px; border-radius:20px; font-size:12px; cursor:pointer;">Limpiar</button>
+                    </div>
+                    <div id="historyList" class="history-list"></div>
+                </div>
+                
+                <div class="section">
+                    <button class="btn btn-success" id="myLocationBtn" style="width:100%">📍 Mi ubicación actual</button>
+                    <div id="locationError" class="error mt-2" style="display:none"></div>
+                </div>
+            </div>
+            
+            <!-- Herramientas -->
+            <div class="tab-pane" id="toolsPane">
+                <div class="section">
+                    <button class="btn btn-primary" id="saveConfigBtn" style="width:100%">💾 Guardar configuración</button>
+                </div>
+                <div class="section">
+                    <div class="section-title">ℹ️ Acerca de</div>
+                    <p style="font-size:12px; color:#475569; line-height:1.5">
+                        <strong>Geoportal Estado de Durango</strong><br>
+                        • 4 mapas base disponibles<br>
+                        • 8 capas temáticas<br>
+                        • Guarda hasta 25 ubicaciones<br>
+                        • Haz clic en cualquier lugar guardado para zoom<br>
+                        • Edita etiquetas con el botón ✏️
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script>
-        // Inicializar el mapa centrado en Durango con opciones para evitar auto-pan
-        const map = L.map('map', {
-            center: [24.8295, -104.8555],
-            zoom: 7,
-            autoPan: false,           // Deshabilitar auto-pan global
-            autoPanOnFocus: false,     // Deshabilitar auto-pan al recibir foco
-            closePopupOnClick: true
-        });
+        // ==================== MAPA ====================
+        const map = L.map('map').setView([24.8295, -104.8555], 7);
         
-        // Definir mapas base (TODOS LOS MAPAS BASE ORIGINALES)
+        // ==================== MAPAS BASE COMPLETOS ====================
         const baseMaps = {
             osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                attribution: '© OpenStreetMap',
                 maxZoom: 19
             }),
             google: L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-                attribution: '&copy; Google',
+                attribution: '© Google',
                 subdomains: ['mt0','mt1','mt2','mt3'],
                 maxZoom: 20
             }),
             esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                attribution: '© Esri',
                 maxZoom: 17
             }),
             relieve: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
+                attribution: '© Esri',
                 maxZoom: 13
             })
         };
         
-        // Añadir OpenStreetMap como mapa base por defecto
         baseMaps.osm.addTo(map);
         
-        // Variables para el control de ubicación
-        let ubicacionMarker = null;
-        let ubicacionActiva = false;
-        let ubicacionWatchId = null;
-        
-        // ===== CONTROL DE PANTALLA COMPLETA PARA EL MAPA =====
-        L.Control.MapFullscreen = L.Control.extend({
-            options: {
-                position: 'topright',
-                title: 'Pantalla completa del mapa',
-                forceSeparateButton: true
-            },
-            
-            onAdd: function(map) {
-                const container = L.DomUtil.create('div', 'leaflet-control-fullscreen leaflet-bar leaflet-control');
-                
-                const link = L.DomUtil.create('a', 'leaflet-control-fullscreen-button leaflet-bar-part', container);
-                link.href = '#';
-                link.title = this.options.title;
-                link.innerHTML = '⛶';
-                
-                L.DomEvent
-                    .on(link, 'click', L.DomEvent.stopPropagation)
-                    .on(link, 'click', L.DomEvent.preventDefault)
-                    .on(link, 'click', this.toggleFullscreen, this);
-                
-                return container;
-            },
-            
-            toggleFullscreen: function() {
-                const mapContainer = document.getElementById('map-container');
-                const isFullscreen = mapContainer.classList.contains('fullscreen');
-                
-                if (!isFullscreen) {
-                    mapContainer.classList.add('fullscreen');
-                    document.querySelector('.sidebar').style.display = 'none';
-                    setTimeout(() => {
-                        map.invalidateSize();
-                    }, 100);
-                    
-                    this.getContainer().querySelector('a').innerHTML = '✕';
-                    this.getContainer().querySelector('a').title = 'Salir de pantalla completa';
-                } else {
-                    mapContainer.classList.remove('fullscreen');
-                    document.querySelector('.sidebar').style.display = 'flex';
-                    setTimeout(() => {
-                        map.invalidateSize();
-                    }, 100);
-                    
-                    this.getContainer().querySelector('a').innerHTML = '⛶';
-                    this.getContainer().querySelector('a').title = 'Pantalla completa del mapa';
-                }
-            }
-        });
-        
-        L.control.mapfullscreen = function(options) {
-            return new L.Control.MapFullscreen(options);
+        // ==================== CONTROL DE UBICACIÓN ====================
+        const locationControl = L.control({ position: 'topright' });
+        locationControl.onAdd = () => {
+            const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            div.innerHTML = '<a href="#" style="background:white; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:18px; box-shadow:0 2px 6px rgba(0,0,0,0.2); cursor:pointer;">📍</a>';
+            div.onclick = () => getMyLocation();
+            return div;
         };
+        locationControl.addTo(map);
         
-        // Añadir el control de pantalla completa del mapa
-        L.control.mapfullscreen({
-            position: 'topright',
-            title: 'Ver mapa en pantalla completa'
-        }).addTo(map);
-        
-        // ===== CONTROL DE UBICACIÓN (BOTÓN EN EL MAPA) =====
-        L.Control.LocationButton = L.Control.extend({
-            options: {
-                position: 'topright',
-                title: 'Ir a mi ubicación',
-                forceSeparateButton: true
-            },
-            
-            onAdd: function(map) {
-                const container = L.DomUtil.create('div', 'leaflet-control-location leaflet-bar leaflet-control');
-                
-                const link = L.DomUtil.create('a', 'leaflet-control-location-button leaflet-bar-part', container);
-                link.href = '#';
-                link.title = this.options.title;
-                link.innerHTML = '📍';
-                
-                L.DomEvent
-                    .on(link, 'click', L.DomEvent.stopPropagation)
-                    .on(link, 'click', L.DomEvent.preventDefault)
-                    .on(link, 'click', function() {
-                        obtenerUbicacionActual(true);
-                        
-                        // Feedback visual
-                        link.classList.add('locating');
-                        setTimeout(() => {
-                            link.classList.remove('locating');
-                        }, 2000);
-                    }, this);
-                
-                return container;
-            }
-        });
-        
-        L.control.locationButton = function(options) {
-            return new L.Control.LocationButton(options);
-        };
-        
-        // Añadir el botón de ubicación al mapa
-        L.control.locationButton({
-            position: 'topright',
-            title: 'Ir a mi ubicación'
-        }).addTo(map);
-        
-        // Manejar la tecla Escape para salir de pantalla completa
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const mapContainer = document.getElementById('map-container');
-                if (mapContainer.classList.contains('fullscreen')) {
-                    mapContainer.classList.remove('fullscreen');
-                    document.querySelector('.sidebar').style.display = 'flex';
-                    setTimeout(() => {
-                        map.invalidateSize();
-                    }, 100);
-                    
-                    const fullscreenBtn = document.querySelector('.leaflet-control-fullscreen-button');
-                    if (fullscreenBtn) {
-                        fullscreenBtn.innerHTML = '⛶';
-                        fullscreenBtn.title = 'Pantalla completa del mapa';
-                    }
-                }
-            }
-        });
-        
-        // Cambiar mapa base
-        document.querySelectorAll('.base-map-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const baseMap = this.getAttribute('data-base');
-                
-                for (const key in baseMaps) {
-                    map.removeLayer(baseMaps[key]);
-                }
-                
-                baseMaps[baseMap].addTo(map);
-                
-                document.querySelectorAll('.base-map-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-        
-        // Objeto para almacenar las capas cargadas
-        const loadedLayers = {};
-        
-        // Lista de capas disponibles 
+        // ==================== CAPAS COMPLETAS ====================
         const availableLayers = [
-            {
-                name: "Límites municipales",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Municipios_Dgo.geojson",
-                color: "#cebb05",
-                type: "polygon"
-            },
-            {
-                name: "Brigadas",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Brigadas_General.geojson",
-                color: "#4361ee",
-                type: "point"
-            },
-            {
-                name: "Red vial",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Red_vial2.geojson",
-                color: "#4cc9f0",
-                type: "line"
-            },
-            {
-                name: "Nucleos RAN",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Nucleos_RAN.geojson",
-                color: "#f72585",
-                type: "polygon"
-            },
-            {
-                name: "Localidades",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Localidades_Dgo.geojson",
-                color: "#FF0000",
-                type: "point",
-                optimize: true,
-                minZoom: 8,
-                pointSize: 3,
-                cluster: true,
-                clusterRadius: 50,
-                showLabelsAtZoom: 9,
-                maxPoints: 1500
-            },
-            {
-                name: "ANP",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/ANPs_Merge_Dgo.geojson",
-                color: "#d2a0fc",
-                type: "polygon"
-            },
-            {
-                name: "Uso de suelo",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/USV_VII_Durango.geojson",
-                color: "#7209b7",
-                type: "polygon"
-            },
-            {
-                name: "RH_NAZAS_AGUANAVAL",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/260120_RH_NAZAS_AGUANAVAL_GEO.geojson",
-                color: "#63a4ff",
-                type: "point"
-            },
-            {
-                name: "Proximamente cuerpos de agua",
-                url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/geojson/hidrologia.geojson",
-                color: "#4361ee",
-                type: "line"
-            },
+            { name: "Límites municipales", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Municipios_Dgo.geojson", color: "#cebb05", type: "polygon" },
+            { name: "Brigadas", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Brigadas_General.geojson", color: "#4361ee", type: "point" },
+            { name: "Red vial", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Red_vial2.geojson", color: "#4cc9f0", type: "line" },
+            { name: "Nucleos RAN", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Nucleos_RAN.geojson", color: "#f72585", type: "polygon" },
+            { name: "Localidades", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Localidades_Dgo.geojson", color: "#FF0000", type: "point", cluster: true },
+            { name: "ANP", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/ANPs_Merge_Dgo.geojson", color: "#d2a0fc", type: "polygon" },
+            { name: "Uso de suelo", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/USV_VII_Durango.geojson", color: "#7209b7", type: "polygon" },
+            { name: "RH Nazas", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/260120_RH_NAZAS_AGUANAVAL_GEO.geojson", color: "#63a4ff", type: "point" }
         ];
         
-        // Cargar lista de capas disponibles
-        function loadAvailableLayers() {
-            const layersList = document.getElementById('github-layers-list');
-            layersList.innerHTML = '';
+        let activeLayers = {};
+        
+        function loadLayersList() {
+            const container = document.getElementById('layersList');
+            container.innerHTML = availableLayers.map(layer => `
+                <div class="layer-item">
+                    <div class="layer-color" style="background:${layer.color}"></div>
+                    <input type="checkbox" class="layer-checkbox" 
+                           data-url="${layer.url}" 
+                           data-color="${layer.color}" 
+                           data-type="${layer.type}"
+                           data-cluster="${layer.cluster || false}"
+                           id="chk_${layer.name.replace(/\s/g, '_')}">
+                    <label class="layer-name" for="chk_${layer.name.replace(/\s/g, '_')}">${layer.name}</label>
+                </div>
+            `).join('');
             
-            availableLayers.forEach(layer => {
-                const layerId = `available-${layer.url.replace(/[^a-zA-Z0-9]/g, '-')}`;
-                const layerItem = document.createElement('div');
-                layerItem.className = 'layer-item';
-                
-                const extraAttrs = layer.optimize ? 
-                    `data-optimize="true" data-point-size="${layer.pointSize || 3}"` : '';
-                
-                layerItem.innerHTML = `
-                    <div class="layer-color" style="background-color: ${layer.color};"></div>
-                    <div class="form-check">
-                        <input class="form-check-input layer-checkbox" type="checkbox" 
-                               data-url="${layer.url}" 
-                               data-color="${layer.color}"
-                               data-type="${layer.type}"
-                               ${extraAttrs}
-                               id="${layerId}">
-                        <label class="form-check-label" for="${layerId}">${layer.name}</label>
-                    </div>
-                `;
-                layersList.appendChild(layerItem);
-                
-                const checkbox = layerItem.querySelector('.layer-checkbox');
-                checkbox.addEventListener('change', function() {
-                    const url = this.getAttribute('data-url');
-                    const color = this.getAttribute('data-color');
-                    const type = this.getAttribute('data-type');
-                    const optimize = this.getAttribute('data-optimize') === 'true';
-                    const pointSize = this.getAttribute('data-point-size') ? 
-                        parseInt(this.getAttribute('data-point-size')) : null;
-                    
-                    if (this.checked) {
-                        loadLayer(url, color, type, optimize, pointSize);
+            document.querySelectorAll('.layer-checkbox').forEach(cb => {
+                cb.onchange = () => {
+                    if (cb.checked) {
+                        loadLayer(cb.dataset.url, cb.dataset.color, cb.dataset.type, cb.dataset.cluster === 'true');
                     } else {
-                        removeLayer(url);
+                        removeLayer(cb.dataset.url);
                     }
-                });
+                };
             });
         }
         
-        // Cargar una capa desde GitHub
-        function loadLayer(url, color, type, optimize = false, pointSize = null) {
-            if (loadedLayers[url]) {
-                return;
-            }
+        function processGeoJSON(data, color, type) {
+            const style = {
+                color: color,
+                weight: type === 'line' ? 3 : 2,
+                opacity: 0.8,
+                fillColor: color,
+                fillOpacity: type === 'line' ? 0 : 0.3
+            };
             
-            addToActiveLayersList(url, getLayerNameByUrl(url), color, true);
-            document.getElementById('layer-error').style.display = 'none';
-            
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
+            return L.geoJSON(data, {
+                style: style,
+                onEachFeature: (feature, layer) => {
+                    if (feature.properties) {
+                        let content = '<div style="max-width:250px"><strong>Información</strong><br>';
+                        Object.entries(feature.properties).forEach(([k, v]) => {
+                            if (v) content += `<strong>${k}:</strong> ${v}<br>`;
+                        });
+                        content += '</div>';
+                        layer.bindPopup(content);
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    const layer = optimize ? 
-                        processLocalidadesOptimizadas(data, color, pointSize) : 
-                        processGeoJSONNormal(data, color, type);
-                    
-                    layer.addTo(map);
-                    
-                    loadedLayers[url] = {
-                        layer: layer,
-                        name: getLayerNameByUrl(url),
-                        color: color,
-                        type: type,
-                        data: data
-                    };
-                    
-                    updateActiveLayersList(url, getLayerNameByUrl(url), color);
-                })
-                .catch(error => {
-                    console.error('Error cargando la capa:', error);
-                    
-                    const errorElement = document.getElementById('layer-error');
-                    errorElement.textContent = `Error al cargar la capa: ${error.message}`;
-                    errorElement.style.display = 'block';
-                    
-                    removeLayer(url);
-                    
-                    const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
-                    if (checkbox) {
-                        checkbox.checked = false;
-                    }
-                });
+                }
+            });
         }
         
-        // Obtener nombre de capa por URL
-        function getLayerNameByUrl(url) {
-            const layer = availableLayers.find(l => l.url === url);
-            return layer ? layer.name : "Capa sin nombre";
-        }
-        
-        // ===== FUNCIÓN OPTIMIZADA SOLO PARA LOCALIDADES =====
-        function processLocalidadesOptimizadas(data, color, pointSize = 3) {
-            console.log(`Procesando Localidades optimizadas: ${data.features.length} puntos`);
-            
-            let features = data.features;
-            const maxPoints = 10500;
-            
-            if (features.length > maxPoints) {
-                console.log(`Optimizando: ${features.length} → ${maxPoints} puntos`);
-                const step = Math.ceil(features.length / maxPoints);
-                features = features.filter((_, index) => index % step === 0);
-                data.features = features;
-            }
-            
-            const markers = L.markerClusterGroup({
+        function processLocalidades(data, color) {
+            const cluster = L.markerClusterGroup({
                 chunkedLoading: true,
-                chunkDelay: 50,
                 maxClusterRadius: 50,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                zoomToBoundsOnClick: false,
-                disableClusteringAtZoom: 9,
-                removeOutsideVisibleBounds: true,
-                animate: true,
-                animateAddingMarkers: false,
-                singleMarkerMode: false
+                disableClusteringAtZoom: 10
             });
             
-            const todasLasEtiquetas = [];
+            const markers = [];
             
-            const geoJsonLayer = L.geoJSON(data, {
-                pointToLayer: function(feature, latlng) {
+            const geoJson = L.geoJSON(data, {
+                pointToLayer: (feature, latlng) => {
                     return L.circleMarker(latlng, {
+                        radius: 5,
                         color: color,
                         fillColor: color,
-                        fillOpacity: 0.85,
-                        radius: pointSize,
-                        weight: 1,
-                        className: 'localidad-punto'
+                        fillOpacity: 0.8,
+                        weight: 1.5
                     });
                 },
-                onEachFeature: function(feature, layer) {
-                    if (feature.properties) {
-                        const nombre = feature.properties.NOMBRE || 
-                                     feature.properties.nombre || 
-                                     feature.properties.Nombre || 
-                                     'Sin nombre';
-                        
-                        const latlng = layer.getLatLng();
-                        
-                        layer.bindTooltip(nombre, {
-                            permanent: false,
-                            direction: 'top',
-                            className: 'localidad-tooltip',
-                            offset: [0, -pointSize - 5]
-                        });
-                        
-                        const labelDiv = L.divIcon({
-                            className: 'etiqueta-localidad',
-                            html: nombre,
-                            iconSize: [100, 20],
-                            iconAnchor: [10, 0]
-                        });
-                        
-                        const labelMarker = L.marker(latlng, {
-                            icon: labelDiv,
-                            interactive: false,
-                            zIndexOffset: 1000
-                        });
-                        
-                        layer._labelMarker = labelMarker;
-                        todasLasEtiquetas.push(labelMarker);
-                        
-                        let popupContent = `<div style="max-width: 250px;">
-                            <strong style="color: ${color}; font-size: 14px;">${nombre}</strong><br>`;
-                        
-                        const props = feature.properties;
-                        const importantFields = ['NOMBRE', 'POBLACION', 'MUNICIPIO', 'TIPO', 'ESTADO'];
-                        
-                        importantFields.forEach(field => {
-                            if (props[field] && props[field] !== '') {
-                                popupContent += `<div style="margin-top: 3px;">
-                                    <span style="font-weight: 600; color: #333;">${field}:</span> 
-                                    <span style="color: #666;">${props[field]}</span>
-                                </div>`;
-                            }
-                        });
-                        
-                        popupContent += `</div>`;
-                        
-                        layer.bindPopup(popupContent, {
-                            autoPan: false,
-                            autoClose: true,
-                            closeOnClick: false,
-                            keepInView: false
-                        });
-                    }
+                onEachFeature: (feature, layer) => {
+                    const nombre = feature.properties.NOMBRE || feature.properties.nombre || feature.properties.Nombre || 'Localidad';
+                    const lat = layer.getLatLng().lat;
+                    const lng = layer.getLatLng().lng;
+                    
+                    // Tooltip al pasar el mouse
+                    layer.bindTooltip(nombre, { 
+                        permanent: false, 
+                        direction: 'top',
+                        className: 'localidad-tooltip',
+                        offset: [0, -8]
+                    });
+                    
+                    // Etiqueta permanente (se mostrará con el zoom)
+                    const labelDiv = L.divIcon({
+                        className: 'localidad-etiqueta',
+                        html: nombre,
+                        iconSize: [nombre.length * 6 + 10, 16],
+                        iconAnchor: [nombre.length * 3, -8]
+                    });
+                    
+                    const labelMarker = L.marker([lat, lng], {
+                        icon: labelDiv,
+                        interactive: false,
+                        zIndexOffset: 1000
+                    });
+                    
+                    layer._labelMarker = labelMarker;
+                    markers.push(labelMarker);
+                    
+                    // Popup con información
+                    let content = `<div style="min-width:150px"><strong>📍 ${nombre}</strong><br>`;
+                    if (feature.properties.POBLACION) content += `<strong>Población:</strong> ${feature.properties.POBLACION}<br>`;
+                    if (feature.properties.MUNICIPIO) content += `<strong>Municipio:</strong> ${feature.properties.MUNICIPIO}<br>`;
+                    if (feature.properties.TIPO) content += `<strong>Tipo:</strong> ${feature.properties.TIPO}<br>`;
+                    content += `</div>`;
+                    layer.bindPopup(content);
                 }
             });
             
-            markers.addLayer(geoJsonLayer);
-            markers._todasLasEtiquetas = todasLasEtiquetas;
+            cluster.addLayer(geoJson);
+            cluster._labelMarkers = markers;
             
-            const labelZoom = 9;
-            
+            // Control de etiquetas según zoom
             function updateLabels() {
                 const zoom = map.getZoom();
-                const showLabels = zoom >= labelZoom;
+                const showLabels = zoom >= 10;
                 
-                geoJsonLayer.eachLayer(function(layer) {
-                    if (showLabels) {
-                        if (layer._labelMarker && !map.hasLayer(layer._labelMarker)) {
-                            layer._labelMarker.addTo(map);
-                        }
-                        if (layer._tooltip && layer._tooltip.isOpen()) {
-                            layer.closeTooltip();
-                        }
+                markers.forEach(marker => {
+                    if (showLabels && !map.hasLayer(marker)) {
+                        marker.addTo(map);
+                    } else if (!showLabels && map.hasLayer(marker)) {
+                        map.removeLayer(marker);
+                    }
+                });
+            }
+            
+            map.on('zoomend', updateLabels);
+            setTimeout(updateLabels, 500);
+            
+            return cluster;
+        }
+        
+        function loadLayer(url, color, type, useCluster) {
+            if (activeLayers[url]) return;
+            
+            addToActiveList(url, true);
+            
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    let layer;
+                    if (type === 'point' && useCluster) {
+                        layer = processLocalidades(data, color);
                     } else {
-                        if (layer._labelMarker && map.hasLayer(layer._labelMarker)) {
-                            map.removeLayer(layer._labelMarker);
-                        }
+                        layer = processGeoJSON(data, color, type);
                     }
+                    layer.addTo(map);
+                    activeLayers[url] = layer;
+                    addToActiveList(url, false);
+                })
+                .catch(err => {
+                    console.error(err);
+                    const errorDiv = document.getElementById('layerError');
+                    errorDiv.innerText = `Error: ${err.message}`;
+                    errorDiv.style.display = 'block';
+                    setTimeout(() => errorDiv.style.display = 'none', 2000);
+                    removeLayer(url);
+                    const cb = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
+                    if (cb) cb.checked = false;
                 });
-            }
-            
-            const zoomListener = function() {
-                updateLabels();
-            };
-            map.on('zoomend', zoomListener);
-            
-            markers._zoomListener = zoomListener;
-            
-            setTimeout(updateLabels, 100);
-            
-            return markers;
         }
         
-        // ===== FUNCIÓN ORIGINAL PARA OTRAS CAPAS =====
-        function processGeoJSONNormal(data, color, type) {
-            try {
-                const style = {
-                    color: color,
-                    weight: type === 'line' ? 3 : 2,
-                    opacity: 0.8,
-                    fillColor: type === 'line' ? 'transparent' : color,
-                    fillOpacity: type === 'line' ? 0 : 0.2
-                };
-                
-                return L.geoJSON(data, {
-                    style: style,
-                    onEachFeature: function(feature, layer) {
-                        if (feature.properties) {
-                            let popupContent = "<div><strong>Propiedades:</strong><br>";
-                            for (let key in feature.properties) {
-                                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
-                            }
-                            popupContent += "</div>";
-                            
-                            layer.bindPopup(popupContent, {
-                                autoPan: false,
-                                autoClose: true,
-                                closeOnClick: false
-                            });
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error("Error procesando GeoJSON:", error);
-                throw new Error("Formato de datos no válido");
-            }
+        function getLayerName(url) {
+            return availableLayers.find(l => l.url === url)?.name || 'Capa';
         }
         
-        // ===== FUNCIÓN PARA ELIMINAR CAPAS =====
-        function removeLayer(url) {
-            if (loadedLayers[url]) {
-                if (loadedLayers[url].layer._todasLasEtiquetas) {
-                    loadedLayers[url].layer._todasLasEtiquetas.forEach(labelMarker => {
-                        if (map.hasLayer(labelMarker)) {
-                            map.removeLayer(labelMarker);
-                        }
+        function addToActiveList(url, loading) {
+            const container = document.getElementById('activeList');
+            const id = `act_${url.replace(/[^a-z0-9]/gi, '_')}`;
+            if (document.getElementById(id)) return;
+            
+            const div = document.createElement('div');
+            div.className = 'active-layer';
+            div.id = id;
+            div.innerHTML = `
+                <span>${getLayerName(url)}</span>
+                ${loading ? '<div class="spinner"></div>' : '<button class="remove-layer" onclick="removeLayer(\'' + url + '\')">✕</button>'}
+            `;
+            container.appendChild(div);
+        }
+        
+        window.removeLayer = (url) => {
+            if (activeLayers[url]) {
+                if (activeLayers[url]._labelMarkers) {
+                    activeLayers[url]._labelMarkers.forEach(label => {
+                        if (map.hasLayer(label)) map.removeLayer(label);
                     });
                 }
-                
-                if (loadedLayers[url].layer._zoomListener) {
-                    map.off('zoomend', loadedLayers[url].layer._zoomListener);
-                }
-                
-                map.removeLayer(loadedLayers[url].layer);
-                delete loadedLayers[url];
-                
-                const layerElement = document.getElementById(`active-${url.replace(/[^a-zA-Z0-9]/g, '-')}`);
-                if (layerElement) {
-                    layerElement.remove();
-                }
-                
-                const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
-                if (checkbox) {
-                    checkbox.checked = false;
-                }
+                map.removeLayer(activeLayers[url]);
+                delete activeLayers[url];
+                const el = document.getElementById(`act_${url.replace(/[^a-z0-9]/gi, '_')}`);
+                if (el) el.remove();
+                const cb = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
+                if (cb) cb.checked = false;
+            }
+        };
+        
+        // ==================== HISTORIAL DE UBICACIONES ====================
+        let history = [];
+        let editingId = null;
+        
+        function loadHistory() {
+            const saved = localStorage.getItem('dg_history');
+            if (saved) {
+                try {
+                    history = JSON.parse(saved);
+                    renderHistory();
+                } catch(e) {}
             }
         }
         
-        // Añadir capa a la lista de activas
-        function addToActiveLayersList(url, name, color, loading = false) {
-            const layerId = `active-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
-            
-            const layerItem = document.createElement('div');
-            layerItem.className = 'layer-item';
-            layerItem.id = layerId;
-            layerItem.innerHTML = `
-                <div class="layer-color" style="background-color: ${color};"></div>
-                <div class="layer-name">${name}</div>
-                ${loading ? '<div class="spinner-border spinner-border-sm" role="status"></div>' : 
-                '<button class="btn btn-sm btn-danger remove-layer" data-url="${url}">X</button>'}
-            `;
-            
-            document.getElementById('active-layers').appendChild(layerItem);
-            
-            if (!loading) {
-                layerItem.querySelector('.remove-layer').addEventListener('click', function() {
-                    removeLayer(url);
-                });
+        function saveHistory() {
+            localStorage.setItem('dg_history', JSON.stringify(history));
+            renderHistory();
+        }
+        
+        function addToHistory(lat, lng, label) {
+            const id = Date.now();
+            const defaultLabel = label || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            history = [{ id, lat, lng, label: defaultLabel }, ...history.filter(h => !(h.lat === lat && h.lng === lng))];
+            if (history.length > 25) history = history.slice(0, 25);
+            saveHistory();
+        }
+        
+        function deleteHistoryItem(id) {
+            history = history.filter(h => h.id !== id);
+            saveHistory();
+        }
+        
+        function clearHistory() {
+            if (confirm('¿Eliminar todos los lugares guardados?')) {
+                history = [];
+                saveHistory();
             }
         }
         
-        // Actualizar la lista de capas activas
-        function updateActiveLayersList(url, name, color) {
-            const layerId = `active-${url.replace(/[^a-zA-Z0-9]/g, '-')}`;
-            const layerElement = document.getElementById(layerId);
-            
-            if (layerElement) {
-                layerElement.innerHTML = `
-                    <div class="layer-color" style="background-color: ${color};"></div>
-                    <div class="layer-name">${name}</div>
-                    <button class="btn btn-sm btn-danger remove-layer" data-url="${url}">X</button>
-                `;
-                
-                layerElement.querySelector('.remove-layer').addEventListener('click', function() {
-                    removeLayer(url);
-                });
+        function updateLabel(id, newLabel) {
+            const item = history.find(h => h.id === id);
+            if (item && newLabel?.trim()) {
+                item.label = newLabel.trim();
+                saveHistory();
             }
+            editingId = null;
         }
         
-        // ===== FUNCIÓN DE UBICACIÓN ACTUAL =====
-        function obtenerUbicacionActual(centrarMapa = true) {
-            const errorElement = document.getElementById('ubicacion-error');
-            errorElement.style.display = 'none';
+        function zoomTo(lat, lng, label) {
+            map.setView([lat, lng], 14);
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`📍 ${label}`).openPopup();
+            setTimeout(() => map.removeLayer(marker), 4000);
+        }
+        
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            if (!container) return;
             
-            if (!navigator.geolocation) {
-                errorElement.textContent = 'Tu navegador no soporta geolocalización.';
-                errorElement.style.display = 'block';
+            if (history.length === 0) {
+                container.innerHTML = '<div class="empty-history">📭 No hay lugares guardados<br>Busca coordenadas o usa tu ubicación</div>';
                 return;
             }
             
-            // Mostrar indicador de carga
-            const miUbicacionBtn = document.getElementById('mi-ubicacion-btn');
-            const originalText = miUbicacionBtn.innerHTML;
-            miUbicacionBtn.innerHTML = '📍 Localizando...';
-            miUbicacionBtn.disabled = true;
-            
-            // Configurar opciones de geolocalización
-            const options = {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            };
-            
-            function exito(posicion) {
-                const lat = posicion.coords.latitude;
-                const lng = posicion.coords.longitude;
-                const precision = posicion.coords.accuracy;
-                
-                console.log(`Ubicación obtenida: ${lat}, ${lng} (precisión: ${precision}m)`);
-                
-                // Eliminar marcador anterior si existe
-                if (ubicacionMarker) {
-                    map.removeLayer(ubicacionMarker);
+            container.innerHTML = history.map(item => {
+                if (editingId === item.id) {
+                    return `
+                        <div class="history-item" style="flex-wrap:wrap">
+                            <input type="text" class="edit-label-input" id="editInput-${item.id}" value="${escapeHtml(item.label)}" style="width:100%">
+                            <div style="display:flex; gap:6px; margin-top:8px; width:100%">
+                                <button class="icon-btn" onclick="saveEdit(${item.id})" style="flex:1; background:#10b981; color:white">💾 Guardar</button>
+                                <button class="icon-btn" onclick="cancelEdit()" style="flex:1; background:#e2e8f0">Cancelar</button>
+                            </div>
+                        </div>
+                    `;
                 }
-                
-                // Crear un icono personalizado para la ubicación actual
-                const ubicacionIcon = L.divIcon({
-                    className: 'ubicacion-actual-marker',
-                    html: '<i></i>',
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10]
-                });
-                
-                // Añadir marcador en la ubicación
-                ubicacionMarker = L.marker([lat, lng], {
-                    icon: ubicacionIcon,
-                    zIndexOffset: 1000,
-                    autoPan: false
-                }).addTo(map);
-                
-                // Añadir un círculo que muestre la precisión
-                const precisionCircle = L.circle([lat, lng], {
-                    radius: precision,
-                    color: '#4285F4',
-                    weight: 1,
-                    fillColor: '#4285F4',
-                    fillOpacity: 0.1,
-                    className: 'precision-circle'
-                }).addTo(map);
-                
-                // Guardar referencia al círculo
-                ubicacionMarker._precisionCircle = precisionCircle;
-                
-                // Popup con información de la ubicación
-                ubicacionMarker.bindPopup(`
-                    <div style="text-align: center;">
-                        <strong>📍 Tu ubicación actual</strong><br>
-                        <small>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}</small><br>
-                        <small>Precisión: ±${Math.round(precision)} metros</small>
+                return `
+                    <div class="history-item" onclick="zoomTo(${item.lat}, ${item.lng}, '${escapeHtml(item.label)}')">
+                        <div class="history-info">
+                            <div class="history-label">📍 ${escapeHtml(item.label)}</div>
+                            <div class="history-coords">${item.lat.toFixed(5)}, ${item.lng.toFixed(5)}</div>
+                        </div>
+                        <div class="history-actions">
+                            <button class="icon-btn" onclick="event.stopPropagation(); startEdit(${item.id})" title="Editar etiqueta">✏️</button>
+                            <button class="icon-btn" onclick="event.stopPropagation(); deleteHistoryItem(${item.id})" title="Eliminar">🗑️</button>
+                        </div>
                     </div>
-                `, { autoPan: false });
-                
-                // Centrar el mapa si se solicita
-                if (centrarMapa) {
-                    map.setView([lat, lng], 15);
-                }
-                
-                // Abrir popup automáticamente
-                setTimeout(() => {
-                    if (ubicacionMarker) {
-                        ubicacionMarker.openPopup();
+                `;
+            }).join('');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        window.zoomTo = zoomTo;
+        window.deleteHistoryItem = deleteHistoryItem;
+        window.startEdit = (id) => { editingId = id; renderHistory(); };
+        window.saveEdit = (id) => {
+            const input = document.getElementById(`editInput-${id}`);
+            if (input) updateLabel(id, input.value);
+        };
+        window.cancelEdit = () => { editingId = null; renderHistory(); };
+        
+        // ==================== GEOLOCALIZACIÓN ====================
+        let locationMarker = null;
+        
+        function getMyLocation() {
+            const errorDiv = document.getElementById('locationError');
+            errorDiv.style.display = 'none';
+            
+            if (!navigator.geolocation) {
+                errorDiv.innerText = 'Geolocalización no soportada';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            const btn = document.getElementById('myLocationBtn');
+            const original = btn.innerText;
+            btn.innerText = '📍 Localizando...';
+            btn.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const { latitude: lat, longitude: lng } = pos.coords;
+                    
+                    if (locationMarker) map.removeLayer(locationMarker);
+                    locationMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({ className: 'location-marker', iconSize: [16, 16] })
+                    }).addTo(map);
+                    locationMarker.bindPopup('<strong>📍 Tu ubicación actual</strong>').openPopup();
+                    map.setView([lat, lng], 14);
+                    
+                    addToHistory(lat, lng, 'Mi ubicación');
+                    document.getElementById('coordInput').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                    btn.innerText = original;
+                    btn.disabled = false;
+                },
+                (err) => {
+                    let msg = 'Error: ';
+                    switch(err.code) {
+                        case 1: msg += 'Permiso denegado'; break;
+                        case 2: msg += 'Ubicación no disponible'; break;
+                        case 3: msg += 'Tiempo de espera agotado'; break;
+                        default: msg += 'Error desconocido';
                     }
-                }, 300);
-                
-                // Restaurar botón
-                miUbicacionBtn.innerHTML = originalText;
-                miUbicacionBtn.disabled = false;
-                
-                // Actualizar campo de coordenadas
-                document.getElementById('coordinates').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            }
-            
-            function error(err) {
-                console.error('Error de geolocalización:', err);
-                
-                let mensajeError = 'Error al obtener tu ubicación: ';
-                switch(err.code) {
-                    case err.PERMISSION_DENIED:
-                        mensajeError += 'Permiso denegado. Por favor, permite el acceso a tu ubicación.';
-                        break;
-                    case err.POSITION_UNAVAILABLE:
-                        mensajeError += 'Información de ubicación no disponible.';
-                        break;
-                    case err.TIMEOUT:
-                        mensajeError += 'Tiempo de espera agotado.';
-                        break;
-                    default:
-                        mensajeError += 'Error desconocido.';
+                    errorDiv.innerText = msg;
+                    errorDiv.style.display = 'block';
+                    btn.innerText = original;
+                    btn.disabled = false;
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+        
+        // ==================== PANEL DESLIZABLE MEJORADO ====================
+        const panel = document.getElementById('panel');
+        const fabBtn = document.getElementById('fabBtn');
+        const handle = document.getElementById('handle');
+        let panelState = 'collapsed';
+        let isDragging = false;
+        let startY = 0;
+        let startTranslateY = 0;
+        
+        function getCurrentTranslateY() {
+            const transform = panel.style.transform;
+            if (transform && transform.includes('translateY')) {
+                const match = transform.match(/translateY\(([^)]+)\)/);
+                if (match) {
+                    const val = match[1];
+                    if (val === '0') return 0;
+                    const num = parseFloat(val);
+                    if (!isNaN(num)) return num;
                 }
-                
-                errorElement.textContent = mensajeError;
-                errorElement.style.display = 'block';
-                
-                // Restaurar botón
-                miUbicacionBtn.innerHTML = originalText;
-                miUbicacionBtn.disabled = false;
             }
+            if (panel.classList.contains('collapsed')) return window.innerHeight - 56;
+            if (panel.classList.contains('half')) return window.innerHeight * 0.55;
+            return 0;
+        }
+        
+        function snapToState(y) {
+            const maxY = window.innerHeight - 56;
+            const halfY = window.innerHeight * 0.55;
+            const threshold = 50;
             
-            // Solicitar ubicación
-            navigator.geolocation.getCurrentPosition(exito, error, options);
-            
-            // También iniciar seguimiento para mantener actualizada (opcional)
-            if (ubicacionWatchId === null) {
-                ubicacionWatchId = navigator.geolocation.watchPosition(
-                    (posicion) => {
-                        // Actualizar marcador si ya existe y el usuario está en modo seguimiento
-                        if (ubicacionActiva && ubicacionMarker) {
-                            const nuevaLat = posicion.coords.latitude;
-                            const nuevaLng = posicion.coords.longitude;
-                            
-                            ubicacionMarker.setLatLng([nuevaLat, nuevaLng]);
-                            if (ubicacionMarker._precisionCircle) {
-                                ubicacionMarker._precisionCircle.setLatLng([nuevaLat, nuevaLng]);
-                                ubicacionMarker._precisionCircle.setRadius(posicion.coords.accuracy);
-                            }
-                        }
-                    },
-                    error,
-                    options
-                );
+            if (y <= threshold) {
+                setPanelState('expanded');
+            } else if (y >= maxY - threshold) {
+                setPanelState('collapsed');
+            } else if (Math.abs(y - halfY) < threshold) {
+                setPanelState('half');
+            } else if (y < halfY) {
+                setPanelState('expanded');
+            } else {
+                setPanelState('collapsed');
             }
         }
         
-        // Evento para el botón de ubicación en el sidebar
-        document.getElementById('mi-ubicacion-btn').addEventListener('click', function() {
-            obtenerUbicacionActual(true);
-        });
+        function setPanelState(state) {
+            panel.classList.remove('collapsed', 'half', 'expanded');
+            panel.classList.add(state);
+            panelState = state;
+            panel.style.transform = '';
+        }
         
-        // Función para buscar coordenadas
-        document.getElementById('search-coords').addEventListener('click', function() {
-            const coordsInput = document.getElementById('coordinates').value;
-            const coords = coordsInput.split(',').map(coord => parseFloat(coord.trim()));
+        function onPointerStart(e) {
+            e.preventDefault();
+            isDragging = true;
+            startY = e.clientY;
+            startTranslateY = getCurrentTranslateY();
+            panel.style.transition = 'none';
             
-            if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-                if (coords[0] >= -90 && coords[0] <= 90 && coords[1] >= -180 && coords[1] <= 180) {
-                    map.setView(coords, 14);
-                    
-                    // Limpiar marcadores existentes (excepto el de ubicación actual)
-                    map.eachLayer(layer => {
-                        if (layer instanceof L.Marker && layer !== ubicacionMarker) {
-                            map.removeLayer(layer);
-                        }
-                    });
-                    
-                    // Añadir nuevo marcador
-                    const marker = L.marker(coords, {
-                        autoPan: false
-                    }).addTo(map);
-                    
-                    marker.bindPopup(`Coordenadas: ${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}`, {
-                        autoPan: false
-                    }).openPopup();
-                    
-                } else {
-                    alert('Por favor ingrese coordenadas válidas.');
-                }
-            } else {
-                alert('Formato incorrecto. Por favor use: latitud, longitud (Ej: 24.8295, -104.8555)');
-            }
+            document.addEventListener('mousemove', onPointerMove);
+            document.addEventListener('mouseup', onPointerEnd);
+            document.addEventListener('touchmove', onPointerMove, { passive: false });
+            document.addEventListener('touchend', onPointerEnd);
+        }
+        
+        function onPointerMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const currentY = e.clientY;
+            const delta = currentY - startY;
+            let newY = startTranslateY + delta;
+            
+            const maxY = window.innerHeight - 56;
+            newY = Math.max(0, Math.min(maxY, newY));
+            
+            panel.style.transform = `translateY(${newY}px)`;
+        }
+        
+        function onPointerEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            panel.style.transition = '';
+            
+            const currentY = getCurrentTranslateY();
+            snapToState(currentY);
+            
+            document.removeEventListener('mousemove', onPointerMove);
+            document.removeEventListener('mouseup', onPointerEnd);
+            document.removeEventListener('touchmove', onPointerMove);
+            document.removeEventListener('touchend', onPointerEnd);
+        }
+        
+        handle.addEventListener('mousedown', onPointerStart);
+        handle.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            onPointerStart(e.touches[0]);
         });
         
-        // Guardar configuración
-        document.getElementById('save-config').addEventListener('click', function() {
-            const config = {
-                baseMap: document.querySelector('.base-map-btn.active').getAttribute('data-base'),
+        fabBtn.onclick = () => {
+            if (panelState === 'collapsed') setPanelState('half');
+            else if (panelState === 'half') setPanelState('expanded');
+            else setPanelState('collapsed');
+        };
+        
+        // ==================== PESTAÑAS ====================
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.onclick = () => {
+                const target = tab.dataset.tab;
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${target}Pane`).classList.add('active');
+            };
+        });
+        
+        // ==================== MAPAS BASE ====================
+        document.querySelectorAll('.base-btn').forEach(btn => {
+            btn.onclick = () => {
+                const base = btn.dataset.base;
+                Object.values(baseMaps).forEach(t => map.removeLayer(t));
+                baseMaps[base].addTo(map);
+                document.querySelectorAll('.base-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            };
+        });
+        
+        // ==================== BÚSQUEDA ====================
+        document.getElementById('searchBtn').onclick = () => {
+            const input = document.getElementById('coordInput').value;
+            const parts = input.split(',').map(p => parseFloat(p.trim()));
+            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && 
+                Math.abs(parts[0]) <= 90 && Math.abs(parts[1]) <= 180) {
+                map.setView([parts[0], parts[1]], 14);
+                const marker = L.marker([parts[0], parts[1]]).addTo(map);
+                const label = `${parts[0].toFixed(5)}, ${parts[1].toFixed(5)}`;
+                marker.bindPopup(`📍 ${label}`).openPopup();
+                addToHistory(parts[0], parts[1], label);
+                setTimeout(() => map.removeLayer(marker), 4000);
+            } else {
+                alert('Formato inválido. Use: latitud, longitud (Ej: 24.8295, -104.8555)');
+            }
+        };
+        
+        document.getElementById('myLocationBtn').onclick = getMyLocation;
+        document.getElementById('clearAllBtn').onclick = clearHistory;
+        
+        // ==================== GUARDAR CONFIGURACIÓN ====================
+        document.getElementById('saveConfigBtn').onclick = () => {
+            localStorage.setItem('dg_config', JSON.stringify({
                 center: map.getCenter(),
                 zoom: map.getZoom(),
-                layers: {}
-            };
-            
-            for (const url in loadedLayers) {
-                config.layers[url] = {
-                    name: loadedLayers[url].name,
-                    visible: map.hasLayer(loadedLayers[url].layer),
-                    color: loadedLayers[url].color
-                };
-            }
-            
-            localStorage.setItem('geoportalDurangoConfig', JSON.stringify(config));
-            alert('Configuración guardada correctamente.');
-        });
+                base: document.querySelector('.base-btn.active').dataset.base
+            }));
+            alert('✅ Configuración guardada');
+        };
         
-        // Cargar configuración guardada
         function loadConfig() {
-            const savedConfig = localStorage.getItem('geoportalDurangoConfig');
-            if (savedConfig) {
+            const saved = localStorage.getItem('dg_config');
+            if (saved) {
                 try {
-                    const config = JSON.parse(savedConfig);
-                    
-                    if (config.baseMap) {
-                        document.querySelectorAll('.base-map-btn').forEach(btn => {
-                            if (btn.getAttribute('data-base') === config.baseMap) {
-                                btn.click();
-                            }
-                        });
-                    }
-                    
-                    if (config.center && config.zoom) {
-                        map.setView([config.center.lat, config.center.lng], config.zoom);
-                    }
-                    
-                    if (config.layers) {
-                        setTimeout(() => {
-                            for (const url in config.layers) {
-                                if (config.layers[url].visible) {
-                                    const layerInfo = availableLayers.find(l => l.url === url);
-                                    if (layerInfo) {
-                                        const checkbox = document.querySelector(`.layer-checkbox[data-url="${url}"]`);
-                                        if (checkbox) {
-                                            checkbox.checked = true;
-                                            setTimeout(() => {
-                                                const color = checkbox.getAttribute('data-color');
-                                                const type = checkbox.getAttribute('data-type');
-                                                const optimize = checkbox.getAttribute('data-optimize') === 'true';
-                                                const pointSize = checkbox.getAttribute('data-point-size') ? 
-                                                    parseInt(checkbox.getAttribute('data-point-size')) : null;
-                                                
-                                                if (optimize) {
-                                                    loadLayer(url, color, type, optimize, pointSize);
-                                                } else {
-                                                    checkbox.dispatchEvent(new Event('change'));
-                                                }
-                                            }, 100);
-                                        }
-                                    }
-                                }
-                            }
-                        }, 500);
-                    }
-                } catch (error) {
-                    console.error("Error cargando configuración:", error);
-                }
+                    const cfg = JSON.parse(saved);
+                    if (cfg.center && cfg.zoom) map.setView([cfg.center.lat, cfg.center.lng], cfg.zoom);
+                    if (cfg.base) document.querySelector(`.base-btn[data-base="${cfg.base}"]`)?.click();
+                } catch(e) {}
             }
         }
         
-        // Inicializar la aplicación
-        function init() {
-            loadAvailableLayers();
-            loadConfig();
-            console.log('Geoportal de Durango iniciado correctamente');
-        }
+        // ==================== INICIALIZAR ====================
+        loadLayersList();
+        loadHistory();
+        loadConfig();
         
-        if (document.readyState !== 'loading') {
-            init();
-        } else {
-            document.addEventListener('DOMContentLoaded', init);
-        }
-        
-        document.getElementById('coordinates').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('search-coords').click();
-            }
+        document.getElementById('coordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('searchBtn').click();
         });
         
-        // Limpiar watchPosition al cerrar/recargar la página
-        window.addEventListener('beforeunload', function() {
-            if (ubicacionWatchId !== null) {
-                navigator.geolocation.clearWatch(ubicacionWatchId);
-            }
-        });
+        console.log('✅ Geoportal Durango iniciado - Localidades con nombres, panel bidireccional y botón FAB fijo');
     </script>
 </body>
 </html>
+
 
