@@ -1,5 +1,5 @@
-Versión 10 
-Interfaz tipo Google Maps con un panel inferior deslizable
+Versión 12
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -31,7 +31,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             background: #e9ecef;
         }
         
-        /* Botón flotante - FIX: se mantiene en posición fija relativa al viewport */
         .fab {
             position: fixed;
             bottom: 20px;
@@ -57,11 +56,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             background: #1557b0;
         }
         
-        .fab:active {
-            transform: scale(0.95);
-        }
-        
-        /* Panel inferior */
         .panel {
             position: fixed;
             bottom: 0;
@@ -90,7 +84,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             transform: translateY(0);
         }
         
-        /* Barra de arrastre mejorada */
         .handle {
             height: 40px;
             display: flex;
@@ -122,34 +115,16 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             background: #1a73e8;
         }
         
-        /* Pestañas */
-        .tabs {
-            display: flex;
-            padding: 0 12px;
-            gap: 4px;
+        .panel-title {
+            text-align: center;
+            padding: 8px 0 4px;
+            font-weight: 600;
+            color: #1a73e8;
+            font-size: 14px;
             border-bottom: 1px solid #eef2ff;
             flex-shrink: 0;
         }
         
-        .tab {
-            flex: 1;
-            padding: 10px 0;
-            background: none;
-            border: none;
-            font-size: 13px;
-            font-weight: 500;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.15s;
-            border-radius: 8px 8px 0 0;
-        }
-        
-        .tab.active {
-            color: #1a73e8;
-            background: #f8fafc;
-        }
-        
-        /* Contenido */
         .content {
             flex: 1;
             overflow-y: auto;
@@ -157,15 +132,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             -webkit-overflow-scrolling: touch;
         }
         
-        .tab-pane {
-            display: none;
-        }
-        
-        .tab-pane.active {
-            display: block;
-        }
-        
-        /* Elementos UI */
         .section {
             margin-bottom: 20px;
         }
@@ -178,6 +144,8 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
         }
         
         .base-grid {
@@ -195,7 +163,7 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             cursor: pointer;
             transition: all 0.15s;
             text-align: center;
-            font-weight: 500;
+            font-weight:500;
         }
         
         .base-btn:hover {
@@ -244,17 +212,9 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             color: white;
         }
         
-        .btn-primary:hover {
-            background: #1557b0;
-        }
-        
         .btn-success {
             background: #10b981;
             color: white;
-        }
-        
-        .btn-success:hover {
-            background: #059669;
         }
         
         .btn-sm {
@@ -262,9 +222,8 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             font-size: 12px;
         }
         
-        /* Historial */
         .history-list {
-            max-height: 280px;
+            max-height: 250px;
             overflow-y: auto;
         }
         
@@ -334,26 +293,27 @@ Interfaz tipo Google Maps con un panel inferior deslizable
         
         .empty-history {
             text-align: center;
-            padding: 30px 20px;
+            padding: 20px;
             color: #94a3b8;
             font-size: 13px;
         }
         
-        /* Capas */
         .layers-grid {
-            max-height: 280px;
+            max-height: 350px;
             overflow-y: auto;
         }
         
         .layer-item {
             display: flex;
             align-items: center;
-            padding: 10px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #f1f5f9;
         }
         
-        .layer-item:hover {
-            background: #f8fafc;
+        .layer-main {
+            display: flex;
+            align-items: center;
+            width: 100%;
         }
         
         .layer-color {
@@ -378,11 +338,85 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             flex-shrink: 0;
         }
         
+        .submenu-toggle {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            color: #64748b;
+            transition: transform 0.2s;
+        }
+        
+        .submenu-toggle.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .submenu {
+            margin-left: 40px;
+            padding: 5px 0;
+            border-left: 2px solid #e2e8f0;
+            display: none;
+        }
+        
+        .submenu.show {
+            display: block;
+        }
+        
+        .brigada-type-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 0 6px 12px;
+            border-bottom: 1px solid #f8fafc;
+        }
+        
+        .brigada-type-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        
+        .brigada-type-name {
+            flex: 1;
+            font-size: 12px;
+        }
+        
+        .brigada-type-checkbox {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        .select-all-types {
+            font-size: 11px;
+            color: #1a73e8;
+            background: none;
+            border: 1px solid #1a73e8;
+            padding: 4px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-left: 12px;
+            margin-top: 5px;
+        }
+        
+        .diagnostic-btn {
+            font-size: 10px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 2px 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
         .active-layer {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px solid #f1f5f9;
             font-size: 13px;
         }
@@ -421,7 +455,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             to { transform: rotate(360deg); }
         }
         
-        /* Marcador ubicación */
         .location-marker {
             background: #1a73e8;
             border: 2px solid white;
@@ -431,29 +464,58 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             box-shadow: 0 0 0 2px rgba(26,115,232,0.3);
         }
         
-        /* Estilos para tooltips y etiquetas de localidades */
         .localidad-tooltip {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid #ff0000;
             color: #000;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         
         .localidad-etiqueta {
             background: transparent;
             border: none;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             color: #000;
             text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white;
             white-space: nowrap;
         }
         
+        .brigada-etiqueta {
+            background: transparent;
+            border: none;
+            font-size: 13px;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 2px 2px 0 white, -2px -2px 0 white, 2px -2px 0 white, -2px 2px 0 white;
+            white-space: nowrap;
+        }
+        
+        .brigada-marker-shadow {
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.4));
+            transition: filter 0.2s;
+        }
+        
+        .brigada-marker-shadow:hover {
+            filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.5));
+        }
+        
         .mt-2 { margin-top: 8px; }
+        
+        .info-text {
+            font-size: 12px;
+            color: #475569;
+            line-height: 1.5;
+        }
+        
+        .search-marker-cross {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         
         @media (max-width: 640px) {
             .fab {
@@ -464,26 +526,9 @@ Interfaz tipo Google Maps con un panel inferior deslizable
                 font-size: 22px;
             }
             
-            .panel.collapsed {
-                transform: translateY(calc(100% - 48px));
-            }
-            
-            .handle {
-                height: 32px;
-            }
-            
-            .content {
-                padding: 12px;
-            }
-            
             .base-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
-            }
-            
-            .base-btn {
-                padding: 8px;
-                font-size: 12px;
             }
         }
     </style>
@@ -498,77 +543,65 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             <div class="handle-bar"></div>
         </div>
         
-        <div class="tabs">
-            <button class="tab active" data-tab="layers">🗺️ Capas</button>
-            <button class="tab" data-tab="locations">📍 Lugares</button>
-            <button class="tab" data-tab="tools">⚙️ Herramientas</button>
-        </div>
+        <div class="panel-title">🌎 Geoportal Durango</div>
         
         <div class="content">
-            <!-- Capas -->
-            <div class="tab-pane active" id="layersPane">
-                <div class="section">
-                    <div class="section-title">🗺️ Mapas Base</div>
-                    <div class="base-grid" id="baseGrid">
-                        <button class="base-btn active" data-base="osm">🌍 OSM</button>
-                        <button class="base-btn" data-base="google">🛰️ Google</button>
-                        <button class="base-btn" data-base="esri">📡 Esri</button>
-                        <button class="base-btn" data-base="relieve">⛰️ Relieve</button>
-                    </div>
+            <!-- SECCIÓN 1: LUGARES -->
+            <div class="section">
+                <div class="section-title">📍 Buscar coordenadas</div>
+                <div class="search-box">
+                    <input type="text" id="coordInput" placeholder="Ej: 24.8295, -104.8555">
+                    <button class="btn btn-primary btn-sm" id="searchBtn">Buscar</button>
                 </div>
-                
-                <div class="section">
-                    <div class="section-title">📁 Capas Temáticas</div>
-                    <div class="layers-grid" id="layersList"></div>
-                    <div id="layerError" class="error" style="display:none"></div>
+                <button class="btn btn-success" id="myLocationBtn" style="width:100%; margin-bottom:12px;">📍 Mi ubicación actual</button>
+                <div id="locationError" class="error" style="display:none"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">
+                    <span>📌 Mis lugares guardados (25)</span>
+                    <button id="clearAllBtn" style="background:#fee2e2; color:#dc2626; border:none; padding:4px 12px; border-radius:20px; font-size:12px; cursor:pointer;">Limpiar</button>
                 </div>
-                
-                <div class="section">
-                    <div class="section-title">✅ Capas Activas</div>
-                    <div id="activeList"></div>
+                <div id="historyList" class="history-list"></div>
+            </div>
+            
+            <!-- SECCIÓN 2: CAPAS -->
+            <div class="section">
+                <div class="section-title">🗺️ Mapas Base</div>
+                <div class="base-grid" id="baseGrid">
+                    <button class="base-btn active" data-base="osm">🌍 OSM</button>
+                    <button class="base-btn" data-base="google">🛰️ Google</button>
+                    <button class="base-btn" data-base="esri">📡 Esri</button>
+                    <button class="base-btn" data-base="relieve">⛰️ Relieve</button>
                 </div>
             </div>
             
-            <!-- Lugares guardados -->
-            <div class="tab-pane" id="locationsPane">
-                <div class="section">
-                    <div class="section-title">🔍 Buscar coordenadas</div>
-                    <div class="search-box">
-                        <input type="text" id="coordInput" placeholder="Ej: 24.8295, -104.8555">
-                        <button class="btn btn-primary btn-sm" id="searchBtn">Buscar</button>
-                    </div>
-                </div>
-                
-                <div class="section">
-                    <div class="section-title">
-                        <span>📍 Mis lugares (25)</span>
-                        <button id="clearAllBtn" style="background:#fee2e2; color:#dc2626; border:none; padding:4px 12px; border-radius:20px; font-size:12px; cursor:pointer;">Limpiar</button>
-                    </div>
-                    <div id="historyList" class="history-list"></div>
-                </div>
-                
-                <div class="section">
-                    <button class="btn btn-success" id="myLocationBtn" style="width:100%">📍 Mi ubicación actual</button>
-                    <div id="locationError" class="error mt-2" style="display:none"></div>
-                </div>
+            <div class="section">
+                <div class="section-title">📁 Capas Temáticas</div>
+                <div class="layers-grid" id="layersList"></div>
+                <div id="layerError" class="error" style="display:none"></div>
             </div>
             
-            <!-- Herramientas -->
-            <div class="tab-pane" id="toolsPane">
-                <div class="section">
-                    <button class="btn btn-primary" id="saveConfigBtn" style="width:100%">💾 Guardar configuración</button>
-                </div>
-                <div class="section">
-                    <div class="section-title">ℹ️ Acerca de</div>
-                    <p style="font-size:12px; color:#475569; line-height:1.5">
-                        <strong>Geoportal Estado de Durango</strong><br>
-                        • 4 mapas base disponibles<br>
-                        • 8 capas temáticas<br>
-                        • Guarda hasta 25 ubicaciones<br>
-                        • Haz clic en cualquier lugar guardado para zoom<br>
-                        • Edita etiquetas con el botón ✏️
-                    </p>
-                </div>
+            <div class="section">
+                <div class="section-title">✅ Capas Activas</div>
+                <div id="activeList"></div>
+            </div>
+            
+            <!-- SECCIÓN 3: HERRAMIENTAS -->
+            <div class="section">
+                <button class="btn btn-primary" id="saveConfigBtn" style="width:100%">💾 Guardar configuración</button>
+                <button class="btn btn-sm" id="diagnosticBtn" style="width:100%; margin-top:8px; background:#f1f5f9;">🔍 Diagnosticar tipos de brigada</button>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">ℹ️ Acerca de</div>
+                <p class="info-text">
+                    <strong>Geoportal Estado de Durango</strong><br>
+                    • 4 mapas base disponibles<br>
+                    • 8 capas temáticas<br>
+                    • Guarda hasta 25 ubicaciones<br>
+                    • Brigadas clasificadas por tipo y color
+                </p>
             </div>
         </div>
     </div>
@@ -579,7 +612,7 @@ Interfaz tipo Google Maps con un panel inferior deslizable
         // ==================== MAPA ====================
         const map = L.map('map').setView([24.8295, -104.8555], 7);
         
-        // ==================== MAPAS BASE COMPLETOS ====================
+        // ==================== MAPAS BASE ====================
         const baseMaps = {
             osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap',
@@ -612,39 +645,206 @@ Interfaz tipo Google Maps con un panel inferior deslizable
         };
         locationControl.addTo(map);
         
-        // ==================== CAPAS COMPLETAS ====================
+        // ==================== COLORES POR TIPO DE BRIGADA ====================
+        const brigadaColors = {
+            'M4': '#FFD700',           // Amarillo brillante
+            'SRNMA': '#FF0000',         // Rojo brillante
+            'PF3': '#006400',           // Verde oscuro
+            'BBC': '#808080',           // Gris
+            'BV': '#000080',            // Azul marino
+            'CONANP': '#E4007F'         // Rosa mexicano
+        };
+        
+        const brigadaTypes = [
+            { name: 'M4', color: '#FFD700', label: 'M4 - Amarillo brillante' },
+            { name: 'SRNMA', color: '#FF0000', label: 'SRNMA - Rojo brillante' },
+            { name: 'PF3', color: '#006400', label: 'PF3 - Verde oscuro' },
+            { name: 'BBC', color: '#808080', label: 'BBC - Gris' },
+            { name: 'BV', color: '#000080', label: 'BV - Azul marino' },
+            { name: 'CONANP', color: '#E4007F', label: 'CONANP - Rosa mexicano' }
+        ];
+        
+        // ==================== ESTADO DE BRIGADAS ====================
+        let brigadasData = null;
+        let brigadasLayer = null;
+        let brigadasLabelMarkers = [];
+        let selectedBrigadaTypes = new Set(['M4', 'SRNMA', 'PF3', 'BBC', 'BV', 'CONANP']);
+        let brigadasSubmenuExpanded = false;
+        let tiposEncontrados = new Set();
+        
+        // ==================== CAPAS ====================
         const availableLayers = [
             { name: "Límites municipales", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Municipios_Dgo.geojson", color: "#cebb05", type: "polygon" },
-            { name: "Brigadas", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Brigadas_General.geojson", color: "#4361ee", type: "point" },
+            { name: "Brigadas", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Brigadas_General.geojson", type: "brigadas", isBrigadas: true },
             { name: "Red vial", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Red_vial2.geojson", color: "#4cc9f0", type: "line" },
             { name: "Nucleos RAN", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Nucleos_RAN.geojson", color: "#f72585", type: "polygon" },
-            { name: "Localidades", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Localidades_Dgo.geojson", color: "#FF0000", type: "point", cluster: true },
+            { name: "Localidades", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/Localidades_Dgo.geojson", color: "#FF0000", type: "point", cluster: true, isLocalidades: true },
             { name: "ANP", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/ANPs_Merge_Dgo.geojson", color: "#d2a0fc", type: "polygon" },
             { name: "Uso de suelo", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/USV_VII_Durango.geojson", color: "#7209b7", type: "polygon" },
             { name: "RH Nazas", url: "https://raw.githubusercontent.com/cemfdurango-betadelta/carto/main/260120_RH_NAZAS_AGUANAVAL_GEO.geojson", color: "#63a4ff", type: "point" }
         ];
         
         let activeLayers = {};
+        let searchMarker = null;
+        
+        // Función para normalizar texto (quitar acentos, espacios, mayúsculas)
+        function normalizeText(text) {
+            if (!text) return '';
+            return text.toString()
+                .trim()
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+        }
+        
+        // Función para diagnosticar tipos en los datos
+        function diagnosticarTipos() {
+            if (!brigadasData) {
+                alert('Primero activa la capa de Brigadas para cargar los datos');
+                return;
+            }
+            
+            const tipos = new Set();
+            const ejemplos = {};
+            
+            brigadasData.features.forEach(f => {
+                const tipo = f.properties?.Tipo || f.properties?.TIPO || f.properties?.tipo || 'SIN_TIPO';
+                tipos.add(tipo);
+                if (!ejemplos[tipo]) {
+                    ejemplos[tipo] = f.properties?.Nombre_Campamento || f.properties?.Nombre || 'N/A';
+                }
+            });
+            
+            let mensaje = '🔍 TIPOS ENCONTRADOS EN LOS DATOS:\n\n';
+            Array.from(tipos).sort().forEach(t => {
+                mensaje += `• "${t}" - Ejemplo: ${ejemplos[t]}\n`;
+            });
+            
+            mensaje += '\n\n📊 COMPARACIÓN CON TIPOS CONFIGURADOS:\n';
+            brigadaTypes.forEach(bt => {
+                const encontrado = Array.from(tipos).some(t => normalizeText(t) === normalizeText(bt.name));
+                mensaje += `• ${bt.name}: ${encontrado ? '✅ ENCONTRADO' : '❌ NO ENCONTRADO'}\n`;
+            });
+            
+            alert(mensaje);
+            console.log('Tipos encontrados:', Array.from(tipos));
+            console.log('Ejemplos:', ejemplos);
+            
+            // Actualizar tipos encontrados
+            tiposEncontrados = tipos;
+        }
         
         function loadLayersList() {
             const container = document.getElementById('layersList');
-            container.innerHTML = availableLayers.map(layer => `
-                <div class="layer-item">
-                    <div class="layer-color" style="background:${layer.color}"></div>
-                    <input type="checkbox" class="layer-checkbox" 
-                           data-url="${layer.url}" 
-                           data-color="${layer.color}" 
-                           data-type="${layer.type}"
-                           data-cluster="${layer.cluster || false}"
-                           id="chk_${layer.name.replace(/\s/g, '_')}">
-                    <label class="layer-name" for="chk_${layer.name.replace(/\s/g, '_')}">${layer.name}</label>
-                </div>
-            `).join('');
+            container.innerHTML = availableLayers.map(layer => {
+                if (layer.isBrigadas) {
+                    return `
+                        <div class="layer-item" style="flex-wrap: wrap;">
+                            <div class="layer-main">
+                                <input type="checkbox" class="layer-checkbox brigadas-main-checkbox" 
+                                       data-url="${layer.url}" 
+                                       data-type="${layer.type}"
+                                       data-isbrigadas="true"
+                                       id="chk_${layer.name.replace(/\s/g, '_')}">
+                                <span class="layer-name">${layer.name}</span>
+                                <button class="submenu-toggle" id="brigadasToggle">▶</button>
+                            </div>
+                            <div class="submenu" id="brigadasSubmenu">
+                                ${brigadaTypes.map(t => `
+                                    <div class="brigada-type-item">
+                                        <div class="brigada-type-color" style="background:${t.color}"></div>
+                                        <span class="brigada-type-name">${t.label}</span>
+                                        <input type="checkbox" class="brigada-type-checkbox" 
+                                               data-type="${t.name}" 
+                                               ${selectedBrigadaTypes.has(t.name) ? 'checked' : ''}>
+                                    </div>
+                                `).join('')}
+                                <button class="select-all-types" id="selectAllBrigadas">✓ Seleccionar todos</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="layer-item">
+                            <div class="layer-color" style="background:${layer.color}"></div>
+                            <input type="checkbox" class="layer-checkbox" 
+                                   data-url="${layer.url}" 
+                                   data-color="${layer.color}" 
+                                   data-type="${layer.type}"
+                                   data-cluster="${layer.cluster || false}"
+                                   data-islocalidades="${layer.isLocalidades || false}"
+                                   id="chk_${layer.name.replace(/\s/g, '_')}">
+                            <label class="layer-name" for="chk_${layer.name.replace(/\s/g, '_')}">${layer.name}</label>
+                        </div>
+                    `;
+                }
+            }).join('');
             
-            document.querySelectorAll('.layer-checkbox').forEach(cb => {
+            // Configurar toggle del submenú
+            const toggleBtn = document.getElementById('brigadasToggle');
+            const submenu = document.getElementById('brigadasSubmenu');
+            
+            if (toggleBtn) {
+                toggleBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    brigadasSubmenuExpanded = !brigadasSubmenuExpanded;
+                    submenu.classList.toggle('show', brigadasSubmenuExpanded);
+                    toggleBtn.classList.toggle('expanded', brigadasSubmenuExpanded);
+                };
+            }
+            
+            // Configurar checkboxes de tipos
+            document.querySelectorAll('.brigada-type-checkbox').forEach(cb => {
+                cb.onchange = () => {
+                    const tipo = cb.dataset.type;
+                    if (cb.checked) {
+                        selectedBrigadaTypes.add(tipo);
+                    } else {
+                        selectedBrigadaTypes.delete(tipo);
+                    }
+                    
+                    const mainCb = document.querySelector('.brigadas-main-checkbox');
+                    if (mainCb && mainCb.checked) {
+                        refreshBrigadasLayer();
+                    }
+                };
+            });
+            
+            // Botón seleccionar todos
+            const selectAllBtn = document.getElementById('selectAllBrigadas');
+            if (selectAllBtn) {
+                selectAllBtn.onclick = () => {
+                    document.querySelectorAll('.brigada-type-checkbox').forEach(cb => {
+                        cb.checked = true;
+                        selectedBrigadaTypes.add(cb.dataset.type);
+                    });
+                    const mainCb = document.querySelector('.brigadas-main-checkbox');
+                    if (mainCb && mainCb.checked) {
+                        refreshBrigadasLayer();
+                    }
+                };
+            }
+            
+            // Configurar checkbox principal
+            const brigadasCb = document.querySelector('.brigadas-main-checkbox');
+            if (brigadasCb) {
+                brigadasCb.onchange = () => {
+                    if (brigadasCb.checked) {
+                        loadBrigadasLayer(brigadasCb.dataset.url);
+                    } else {
+                        removeBrigadasLayer();
+                    }
+                };
+            }
+            
+            // Otros checkboxes
+            document.querySelectorAll('.layer-checkbox:not(.brigadas-main-checkbox)').forEach(cb => {
                 cb.onchange = () => {
                     if (cb.checked) {
-                        loadLayer(cb.dataset.url, cb.dataset.color, cb.dataset.type, cb.dataset.cluster === 'true');
+                        loadLayer(cb.dataset.url, cb.dataset.color, cb.dataset.type, 
+                                  cb.dataset.cluster === 'true', 
+                                  false,
+                                  cb.dataset.islocalidades === 'true');
                     } else {
                         removeLayer(cb.dataset.url);
                     }
@@ -676,6 +876,227 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             });
         }
         
+        // Función mejorada para obtener el tipo normalizado
+        function getNormalizedTipo(properties) {
+            const rawTipo = properties?.Tipo || properties?.TIPO || properties?.tipo || '';
+            return normalizeText(rawTipo);
+        }
+        
+        // Función para verificar si un tipo está seleccionado (comparación flexible)
+        function isTipoSelected(rawTipo) {
+            const tipoNormalizado = normalizeText(rawTipo);
+            
+            // Buscar coincidencia con los tipos seleccionados
+            for (let selectedType of selectedBrigadaTypes) {
+                if (normalizeText(selectedType) === tipoNormalizado) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        // Función para obtener el color según el tipo (comparación flexible)
+        function getColorByTipo(rawTipo) {
+            const tipoNormalizado = normalizeText(rawTipo);
+            
+            for (let [key, color] of Object.entries(brigadaColors)) {
+                if (normalizeText(key) === tipoNormalizado) {
+                    return color;
+                }
+            }
+            return '#4361ee'; // Color por defecto
+        }
+        
+        function createBrigadasLayer(data) {
+            // Limpiar etiquetas anteriores
+            brigadasLabelMarkers.forEach(m => { if (map.hasLayer(m)) map.removeLayer(m); });
+            brigadasLabelMarkers = [];
+            
+            const cluster = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                disableClusteringAtZoom: 12
+            });
+            
+            // Filtrar features por tipos seleccionados (comparación flexible)
+            const filteredFeatures = data.features.filter(feature => {
+                const rawTipo = feature.properties?.Tipo || feature.properties?.TIPO || feature.properties?.tipo || '';
+                return isTipoSelected(rawTipo);
+            });
+            
+            console.log(`📊 Mostrando ${filteredFeatures.length} de ${data.features.length} brigadas`);
+            
+            const filteredData = { ...data, features: filteredFeatures };
+            
+            const geoJson = L.geoJSON(filteredData, {
+                pointToLayer: (feature, latlng) => {
+                    const rawTipo = feature.properties?.Tipo || feature.properties?.TIPO || feature.properties?.tipo || '';
+                    const markerColor = getColorByTipo(rawTipo);
+                    const isBBC = normalizeText(rawTipo) === 'BBC';
+                    
+                    return L.circleMarker(latlng, {
+                        radius: 7,
+                        color: isBBC ? '#000000' : markerColor,
+                        fillColor: markerColor,
+                        fillOpacity: 0.9,
+                        weight: isBBC ? 2.5 : 2,
+                        className: 'brigada-marker-shadow'
+                    });
+                },
+                onEachFeature: (feature, layer) => {
+                    const nombre = feature.properties.Nombre_Campamento || feature.properties.Nombre || 'Brigada';
+                    const rawTipo = feature.properties.Tipo || feature.properties.TIPO || feature.properties.tipo || 'N/A';
+                    const municipio = feature.properties.Municipio || '';
+                    const lat = layer.getLatLng().lat;
+                    const lng = layer.getLatLng().lng;
+                    
+                    layer.bindTooltip(`${nombre} (${rawTipo})`, { 
+                        permanent: false, 
+                        direction: 'top',
+                        className: 'localidad-tooltip',
+                        offset: [0, -10]
+                    });
+                    
+                    const labelDiv = L.divIcon({
+                        className: 'brigada-etiqueta',
+                        html: nombre,
+                        iconSize: [nombre.length * 7 + 10, 20],
+                        iconAnchor: [nombre.length * 3.5, -10]
+                    });
+                    
+                    const labelMarker = L.marker([lat, lng], {
+                        icon: labelDiv,
+                        interactive: false,
+                        zIndexOffset: 1000
+                    });
+                    
+                    brigadasLabelMarkers.push(labelMarker);
+                    
+                    let content = `<div style="min-width:200px"><strong>🏕️ ${nombre}</strong><br>`;
+                    content += `<strong>Tipo:</strong> ${rawTipo}<br>`;
+                    if (municipio) content += `<strong>Municipio:</strong> ${municipio}<br>`;
+                    if (feature.properties.Programa) content += `<strong>Programa:</strong> ${feature.properties.Programa}<br>`;
+                    if (feature.properties.Combatientes) content += `<strong>Combatientes:</strong> ${feature.properties.Combatientes}<br>`;
+                    content += `</div>`;
+                    layer.bindPopup(content);
+                }
+            });
+            
+            cluster.addLayer(geoJson);
+            
+            function updateLabels() {
+                const zoom = map.getZoom();
+                const showLabels = zoom >= 10;
+                
+                brigadasLabelMarkers.forEach(marker => {
+                    if (showLabels && !map.hasLayer(marker)) {
+                        marker.addTo(map);
+                    } else if (!showLabels && map.hasLayer(marker)) {
+                        map.removeLayer(marker);
+                    }
+                });
+            }
+            
+            map.on('zoomend', updateLabels);
+            setTimeout(updateLabels, 500);
+            
+            return cluster;
+        }
+        
+        function refreshBrigadasLayer() {
+            if (brigadasData) {
+                if (brigadasLayer) {
+                    map.removeLayer(brigadasLayer);
+                }
+                brigadasLayer = createBrigadasLayer(brigadasData);
+                brigadasLayer.addTo(map);
+                updateActiveBrigadasEntry();
+            }
+        }
+        
+        function updateActiveBrigadasEntry() {
+            const url = 'brigadas_layer';
+            const existingEntry = document.getElementById(`act_${url.replace(/[^a-z0-9]/gi, '_')}`);
+            if (existingEntry) {
+                const count = brigadasData?.features.filter(f => {
+                    const rawTipo = f.properties?.Tipo || f.properties?.TIPO || f.properties?.tipo || '';
+                    return isTipoSelected(rawTipo);
+                }).length || 0;
+                existingEntry.querySelector('span').innerHTML = `Brigadas (${selectedBrigadaTypes.size} tipos, ${count} campamentos)`;
+            }
+        }
+        
+        function loadBrigadasLayer(url) {
+            if (brigadasLayer) {
+                brigadasLayer.addTo(map);
+                updateActiveBrigadasEntry();
+                return;
+            }
+            
+            addToActiveList(url, true, 'Brigadas');
+            
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    brigadasData = data;
+                    
+                    // Diagnosticar tipos encontrados
+                    const tiposEncontrados = new Set();
+                    data.features.forEach(f => {
+                        const tipo = f.properties?.Tipo || f.properties?.TIPO || f.properties?.tipo;
+                        if (tipo) tiposEncontrados.add(tipo);
+                    });
+                    console.log('🔍 Tipos de brigada encontrados en los datos:', Array.from(tiposEncontrados));
+                    
+                    brigadasLayer = createBrigadasLayer(data);
+                    brigadasLayer.addTo(map);
+                    activeLayers[url] = brigadasLayer;
+                    
+                    const entry = document.getElementById(`act_${url.replace(/[^a-z0-9]/gi, '_')}`);
+                    if (entry) {
+                        const count = data.features.filter(f => {
+                            const rawTipo = f.properties?.Tipo || f.properties?.TIPO || f.properties?.tipo || '';
+                            return isTipoSelected(rawTipo);
+                        }).length;
+                        entry.innerHTML = `
+                            <span>Brigadas (${selectedBrigadaTypes.size} tipos, ${count} campamentos)</span>
+                            <button class="remove-layer" onclick="removeBrigadasLayer()">✕</button>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    const errorDiv = document.getElementById('layerError');
+                    errorDiv.innerText = `Error: ${err.message}`;
+                    errorDiv.style.display = 'block';
+                    setTimeout(() => errorDiv.style.display = 'none', 2000);
+                    
+                    const cb = document.querySelector('.brigadas-main-checkbox');
+                    if (cb) cb.checked = false;
+                    removeBrigadasLayer();
+                });
+        }
+        
+        function removeBrigadasLayer() {
+            if (brigadasLayer) {
+                map.removeLayer(brigadasLayer);
+                brigadasLabelMarkers.forEach(m => { if (map.hasLayer(m)) map.removeLayer(m); });
+                brigadasLabelMarkers = [];
+            }
+            
+            const url = 'brigadas_layer';
+            const el = document.getElementById(`act_${url.replace(/[^a-z0-9]/gi, '_')}`);
+            if (el) el.remove();
+            
+            const cb = document.querySelector('.brigadas-main-checkbox');
+            if (cb) cb.checked = false;
+        }
+        
+        window.removeBrigadasLayer = removeBrigadasLayer;
+        
         function processLocalidades(data, color) {
             const cluster = L.markerClusterGroup({
                 chunkedLoading: true,
@@ -700,7 +1121,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
                     const lat = layer.getLatLng().lat;
                     const lng = layer.getLatLng().lng;
                     
-                    // Tooltip al pasar el mouse
                     layer.bindTooltip(nombre, { 
                         permanent: false, 
                         direction: 'top',
@@ -708,7 +1128,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
                         offset: [0, -8]
                     });
                     
-                    // Etiqueta permanente (se mostrará con el zoom)
                     const labelDiv = L.divIcon({
                         className: 'localidad-etiqueta',
                         html: nombre,
@@ -725,11 +1144,9 @@ Interfaz tipo Google Maps con un panel inferior deslizable
                     layer._labelMarker = labelMarker;
                     markers.push(labelMarker);
                     
-                    // Popup con información
                     let content = `<div style="min-width:150px"><strong>📍 ${nombre}</strong><br>`;
                     if (feature.properties.POBLACION) content += `<strong>Población:</strong> ${feature.properties.POBLACION}<br>`;
                     if (feature.properties.MUNICIPIO) content += `<strong>Municipio:</strong> ${feature.properties.MUNICIPIO}<br>`;
-                    if (feature.properties.TIPO) content += `<strong>Tipo:</strong> ${feature.properties.TIPO}<br>`;
                     content += `</div>`;
                     layer.bindPopup(content);
                 }
@@ -738,7 +1155,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             cluster.addLayer(geoJson);
             cluster._labelMarkers = markers;
             
-            // Control de etiquetas según zoom
             function updateLabels() {
                 const zoom = map.getZoom();
                 const showLabels = zoom >= 10;
@@ -758,10 +1174,10 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             return cluster;
         }
         
-        function loadLayer(url, color, type, useCluster) {
+        function loadLayer(url, color, type, useCluster, isBrigadas, isLocalidades) {
             if (activeLayers[url]) return;
             
-            addToActiveList(url, true);
+            addToActiveList(url, true, getLayerName(url));
             
             fetch(url)
                 .then(res => {
@@ -770,14 +1186,14 @@ Interfaz tipo Google Maps con un panel inferior deslizable
                 })
                 .then(data => {
                     let layer;
-                    if (type === 'point' && useCluster) {
+                    if (isLocalidades && useCluster) {
                         layer = processLocalidades(data, color);
                     } else {
                         layer = processGeoJSON(data, color, type);
                     }
                     layer.addTo(map);
                     activeLayers[url] = layer;
-                    addToActiveList(url, false);
+                    addToActiveList(url, false, getLayerName(url));
                 })
                 .catch(err => {
                     console.error(err);
@@ -795,7 +1211,7 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             return availableLayers.find(l => l.url === url)?.name || 'Capa';
         }
         
-        function addToActiveList(url, loading) {
+        function addToActiveList(url, loading, displayName) {
             const container = document.getElementById('activeList');
             const id = `act_${url.replace(/[^a-z0-9]/gi, '_')}`;
             if (document.getElementById(id)) return;
@@ -804,13 +1220,18 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             div.className = 'active-layer';
             div.id = id;
             div.innerHTML = `
-                <span>${getLayerName(url)}</span>
-                ${loading ? '<div class="spinner"></div>' : '<button class="remove-layer" onclick="removeLayer(\'' + url + '\')">✕</button>'}
+                <span>${displayName}</span>
+                ${loading ? '<div class="spinner"></div>' : `<button class="remove-layer" onclick="removeLayer('${url}')">✕</button>`}
             `;
             container.appendChild(div);
         }
         
         window.removeLayer = (url) => {
+            if (url === 'brigadas_layer') {
+                removeBrigadasLayer();
+                return;
+            }
+            
             if (activeLayers[url]) {
                 if (activeLayers[url]._labelMarkers) {
                     activeLayers[url]._labelMarkers.forEach(label => {
@@ -826,12 +1247,12 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             }
         };
         
-        // ==================== HISTORIAL DE UBICACIONES ====================
+        // ==================== HISTORIAL ====================
         let history = [];
         let editingId = null;
         
         function loadHistory() {
-            const saved = localStorage.getItem('dg_history');
+            const saved = localStorage.getItem('dg_history_v4');
             if (saved) {
                 try {
                     history = JSON.parse(saved);
@@ -841,14 +1262,14 @@ Interfaz tipo Google Maps con un panel inferior deslizable
         }
         
         function saveHistory() {
-            localStorage.setItem('dg_history', JSON.stringify(history));
+            localStorage.setItem('dg_history_v4', JSON.stringify(history));
             renderHistory();
         }
         
         function addToHistory(lat, lng, label) {
             const id = Date.now();
             const defaultLabel = label || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-            history = [{ id, lat, lng, label: defaultLabel }, ...history.filter(h => !(h.lat === lat && h.lng === lng))];
+            history = [{ id, lat, lng, label: defaultLabel }, ...history.filter(h => !(Math.abs(h.lat - lat) < 0.0001 && Math.abs(h.lng - lng) < 0.0001))];
             if (history.length > 25) history = history.slice(0, 25);
             saveHistory();
         }
@@ -876,9 +1297,20 @@ Interfaz tipo Google Maps con un panel inferior deslizable
         
         function zoomTo(lat, lng, label) {
             map.setView([lat, lng], 14);
-            const marker = L.marker([lat, lng]).addTo(map);
-            marker.bindPopup(`📍 ${label}`).openPopup();
-            setTimeout(() => map.removeLayer(marker), 4000);
+            
+            const crossIcon = L.divIcon({
+                className: 'search-marker-cross',
+                html: '<div style="position: relative; width: 30px; height: 30px;"><div style="position: absolute; top: 14px; left: 0; width: 30px; height: 2px; background: white; box-shadow: 0 0 3px black;"></div><div style="position: absolute; top: 0; left: 14px; width: 2px; height: 30px; background: white; box-shadow: 0 0 3px black;"></div></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+            
+            if (searchMarker) {
+                map.removeLayer(searchMarker);
+            }
+            
+            searchMarker = L.marker([lat, lng], { icon: crossIcon }).addTo(map);
+            searchMarker.bindPopup(`📍 ${label}`).openPopup();
         }
         
         function renderHistory() {
@@ -963,6 +1395,16 @@ Interfaz tipo Google Maps con un panel inferior deslizable
                     
                     addToHistory(lat, lng, 'Mi ubicación');
                     document.getElementById('coordInput').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                    
+                    if (searchMarker) map.removeLayer(searchMarker);
+                    const crossIcon = L.divIcon({
+                        className: 'search-marker-cross',
+                        html: '<div style="position: relative; width: 30px; height: 30px;"><div style="position: absolute; top: 14px; left: 0; width: 30px; height: 2px; background: white; box-shadow: 0 0 3px black;"></div><div style="position: absolute; top: 0; left: 14px; width: 2px; height: 30px; background: white; box-shadow: 0 0 3px black;"></div></div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    });
+                    searchMarker = L.marker([lat, lng], { icon: crossIcon }).addTo(map);
+                    
                     btn.innerText = original;
                     btn.disabled = false;
                 },
@@ -983,7 +1425,7 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             );
         }
         
-        // ==================== PANEL DESLIZABLE MEJORADO ====================
+        // ==================== PANEL DESLIZABLE ====================
         const panel = document.getElementById('panel');
         const fabBtn = document.getElementById('fabBtn');
         const handle = document.getElementById('handle');
@@ -1086,17 +1528,6 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             else setPanelState('collapsed');
         };
         
-        // ==================== PESTAÑAS ====================
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.onclick = () => {
-                const target = tab.dataset.tab;
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(`${target}Pane`).classList.add('active');
-            };
-        });
-        
         // ==================== MAPAS BASE ====================
         document.querySelectorAll('.base-btn').forEach(btn => {
             btn.onclick = () => {
@@ -1114,12 +1545,26 @@ Interfaz tipo Google Maps con un panel inferior deslizable
             const parts = input.split(',').map(p => parseFloat(p.trim()));
             if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && 
                 Math.abs(parts[0]) <= 90 && Math.abs(parts[1]) <= 180) {
+                
                 map.setView([parts[0], parts[1]], 14);
-                const marker = L.marker([parts[0], parts[1]]).addTo(map);
+                
+                const crossIcon = L.divIcon({
+                    className: 'search-marker-cross',
+                    html: '<div style="position: relative; width: 30px; height: 30px;"><div style="position: absolute; top: 14px; left: 0; width: 30px; height: 2px; background: white; box-shadow: 0 0 3px black;"></div><div style="position: absolute; top: 0; left: 14px; width: 2px; height: 30px; background: white; box-shadow: 0 0 3px black;"></div></div>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                
+                if (searchMarker) {
+                    map.removeLayer(searchMarker);
+                }
+                
+                searchMarker = L.marker([parts[0], parts[1]], { icon: crossIcon }).addTo(map);
+                
                 const label = `${parts[0].toFixed(5)}, ${parts[1].toFixed(5)}`;
-                marker.bindPopup(`📍 ${label}`).openPopup();
+                searchMarker.bindPopup(`📍 ${label}`).openPopup();
+                
                 addToHistory(parts[0], parts[1], label);
-                setTimeout(() => map.removeLayer(marker), 4000);
             } else {
                 alert('Formato inválido. Use: latitud, longitud (Ej: 24.8295, -104.8555)');
             }
@@ -1128,39 +1573,47 @@ Interfaz tipo Google Maps con un panel inferior deslizable
         document.getElementById('myLocationBtn').onclick = getMyLocation;
         document.getElementById('clearAllBtn').onclick = clearHistory;
         
+        // ==================== DIAGNÓSTICO ====================
+        document.getElementById('diagnosticBtn').onclick = diagnosticarTipos;
+        
         // ==================== GUARDAR CONFIGURACIÓN ====================
         document.getElementById('saveConfigBtn').onclick = () => {
-            localStorage.setItem('dg_config', JSON.stringify({
+            localStorage.setItem('dg_config_v4', JSON.stringify({
                 center: map.getCenter(),
                 zoom: map.getZoom(),
-                base: document.querySelector('.base-btn.active').dataset.base
+                base: document.querySelector('.base-btn.active')?.dataset.base || 'osm',
+                brigadaTypes: Array.from(selectedBrigadaTypes)
             }));
             alert('✅ Configuración guardada');
         };
         
         function loadConfig() {
-            const saved = localStorage.getItem('dg_config');
+            const saved = localStorage.getItem('dg_config_v4');
             if (saved) {
                 try {
                     const cfg = JSON.parse(saved);
                     if (cfg.center && cfg.zoom) map.setView([cfg.center.lat, cfg.center.lng], cfg.zoom);
-                    if (cfg.base) document.querySelector(`.base-btn[data-base="${cfg.base}"]`)?.click();
+                    if (cfg.base) {
+                        const btn = document.querySelector(`.base-btn[data-base="${cfg.base}"]`);
+                        if (btn) btn.click();
+                    }
+                    if (cfg.brigadaTypes) {
+                        selectedBrigadaTypes = new Set(cfg.brigadaTypes);
+                    }
                 } catch(e) {}
             }
         }
         
         // ==================== INICIALIZAR ====================
+        loadConfig();
         loadLayersList();
         loadHistory();
-        loadConfig();
         
         document.getElementById('coordInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') document.getElementById('searchBtn').click();
         });
         
-        console.log('✅ Geoportal Durango iniciado - Localidades con nombres, panel bidireccional y botón FAB fijo');
+        console.log('✅ Geoportal Durango - Con diagnóstico de tipos de brigada');
     </script>
 </body>
 </html>
-
-
